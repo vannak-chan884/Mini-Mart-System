@@ -855,12 +855,16 @@
                 </div>
                 <div class="khqr-currencies">
                     <div class="currency-pill">
-                        <span class="flag">🇺🇸</span>
+                        <span class="flag">
+                            $
+                        </span>
                         <span class="code">USD</span>
                         <span class="name">US Dollar</span>
                     </div>
                     <div class="currency-pill">
-                        <span class="flag">🇰🇭</span>
+                        <span class="flag">
+                            ៛
+                        </span>
                         <span class="code">KHR</span>
                         <span class="name">Khmer Riel</span>
                     </div>
@@ -871,9 +875,9 @@
         {{-- ── FOOTER ── --}}
         <footer>
             <div class="footer-left">
-                <strong>Mini Mart POS</strong> — Built for Cambodia 🇰🇭
+                <strong>Mini Mart POS</strong> — Built for Cambodia
                 <br>
-                <span style="font-size:12px;">ប្រព័ន្ធគ្រប់គ្រងការលក់ • Phnom Penh</span>
+                <span style="font-size:12px;">ប្រព័ន្ធគ្រប់គ្រងការលក់ • Takeo</span>
             </div>
             <div class="footer-right">
                 Payments via

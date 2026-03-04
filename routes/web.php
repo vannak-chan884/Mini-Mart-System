@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\PosController;
+use App\Http\Controllers\Admin\SaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -36,6 +37,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('pos/generate-khqr', [PosController::class, 'generateKhqr'])->name('pos.generateKhqr');
 
         Route::post('pos/verify-khqr', [PosController::class, 'verifyKhqr'])->name('pos.verifyKhqr');
+
+        Route::resource('sales', SaleController::class)->only(['index', 'show', 'destroy']);
 });
 
 Route::middleware('auth')->group(function () {
