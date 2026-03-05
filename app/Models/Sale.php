@@ -13,7 +13,8 @@ class Sale extends Model
         'paid_amount',
         'change_amount',
         'payment_method',
-        'bakong_hash'
+        'bakong_hash',
+        'aba_tran_id',
     ];
 
     public function items()

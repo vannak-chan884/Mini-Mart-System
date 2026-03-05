@@ -12,10 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('sales', function (Blueprint $table) {
-            // Only rename if old column still exists
-            if (Schema::hasColumn('sales', 'bakong_txn_id') && !Schema::hasColumn('sales', 'bakong_hash')) {
-                $table->renameColumn('bakong_txn_id', 'bakong_hash');
-            }
+            // Store ABA PayWay transaction ID for reference & verification
+            $table->string('aba_tran_id')->nullable()->after('bakong_hash');
         });
     }
 
@@ -25,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('sales', function (Blueprint $table) {
-            $table->renameColumn('bakong_hash', 'bakong_txn_id');
+            $table->dropColumn('aba_tran_id');
         });
     }
 };

@@ -1104,6 +1104,7 @@
                 <div class="payment-tabs">
                     <button class="payment-tab active" id="tab-cash" onclick="setPayment('cash')">💵 Cash</button>
                     <button class="payment-tab" id="tab-khqr" onclick="setPayment('khqr')">📱 KHQR</button>
+                    <button class="payment-tab" id="tab-aba" onclick="setPayment('aba')">🏦 ABA</button>
                 </div>
                 <div class="cash-section" id="cashSection">
                     <div class="input-label">Cash Received</div>
@@ -1118,7 +1119,7 @@
         </div>
     </div>
 
-    {{-- ── KHQR MODAL ────────────────────────────────── --}}
+    {{-- ── KHQR MODAL ── --}}
     <div class="qr-backdrop" id="qrBackdrop">
         <div class="qr-modal">
             <div class="qr-modal-header">
@@ -1166,16 +1167,64 @@
             </div>
         </div>
     </div>
+
+    {{-- ABA PayWay Modal --}}
+    </div>  {{-- closes #qrBackdrop --}}
+
+    {{-- ── ABA PAYWAY MODAL — OUTSIDE #qrBackdrop ── --}}
+    <div id="abaBackdrop"
+         style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85);
+                backdrop-filter:blur(8px); z-index:300; align-items:center;
+                justify-content:center; padding:20px;">
+        <div style="background:#1C1C2E; border:1px solid rgba(255,255,255,0.1);
+                    border-radius:24px; width:100%; max-width:360px; padding:32px 28px;
+                    text-align:center; box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+
+            <div style="width:56px;height:56px;background:linear-gradient(135deg,#003087,#1a4db3);
+                        border-radius:16px;display:flex;align-items:center;justify-content:center;
+                        font-size:26px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(0,48,135,0.4);">🏦</div>
+            <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:#fff;margin-bottom:4px;">ABA PayWay</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:20px;">Scan with ABA Mobile app to pay</div>
+
+            <div id="abaAmount" style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#60A5FA;margin-bottom:16px;"></div>
+
+            <div style="background:#fff;border-radius:16px;padding:12px;margin:0 auto 20px;width:220px;height:220px;display:flex;align-items:center;justify-content:center;">
+                <img id="abaQrImage" src="" alt="ABA QR Code" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
+            </div>
+
+            <div id="abaWaiting" style="display:flex;align-items:center;justify-content:center;gap:8px;
+                        padding:10px 16px;background:rgba(0,48,135,0.15);border:1px solid rgba(0,48,135,0.3);
+                        border-radius:10px;font-size:13px;color:#93C5FD;font-weight:500;margin-bottom:16px;">
+                <span style="width:7px;height:7px;background:#93C5FD;border-radius:50%;animation:pulseDot 1.4s ease infinite;display:inline-block;"></span>
+                Waiting for payment...
+            </div>
+
+            <div id="abaSuccess" style="display:none;padding:16px;background:rgba(22,163,74,0.12);
+                        border:1px solid rgba(22,163,74,0.3);border-radius:12px;margin-bottom:16px;">
+                <div style="font-size:28px;margin-bottom:6px;">✅</div>
+                <div style="font-size:15px;font-weight:700;color:#86EFAC;">Payment Confirmed!</div>
+                <div style="font-size:12px;color:#6B7280;margin-top:4px;">Redirecting to receipt...</div>
+            </div>
+
+            <button onclick="closeAbaModal()"
+                    style="width:100%;padding:11px;background:rgba(204,0,1,0.12);border:1px solid rgba(204,0,1,0.3);
+                           border-radius:10px;color:#FCA5A5;font-size:13px;font-weight:600;
+                           font-family:'DM Sans',sans-serif;cursor:pointer;">
+                Cancel Transaction
+            </button>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script>
         const POS_STATE = {
-            paymentInterval: null,
+            paymentInterval:   null,
             countdownInterval: null,
-            totalAmount: 0,
-            paymentMethod: 'cash',
-            viewMode: localStorage.getItem('pos_view') || 'grid',
+            abaInterval:       null,   // ← add this
+            totalAmount:       0,
+            paymentMethod:     'cash',
+            viewMode:          localStorage.getItem('pos_view') || 'grid',
         };
 
         // ── View toggle (persists via localStorage) ───────
@@ -1191,9 +1240,10 @@
         // ── Payment tabs ──────────────────────────────────
         function setPayment(method) {
             POS_STATE.paymentMethod = method;
-            document.getElementById('tab-cash').classList.toggle('active', method === 'cash');
-            document.getElementById('tab-khqr').classList.toggle('active', method === 'khqr');
-            document.getElementById('cashSection').style.display = method === 'cash' ? 'flex' : 'none';
+            ['cash','khqr','aba'].forEach(m => {
+                document.getElementById(`tab-${m}`).classList.toggle('active', m === method);
+            });
+            document.getElementById('cashSection').style.display = method === 'cash' ? 'block' : 'none';
         }
 
         // ── Init ──────────────────────────────────────────
@@ -1366,9 +1416,95 @@
             2);
         }
 
-        // ── Checkout ──────────────────────────────────────
+        // ── Checkout ──
+        // function checkout() {
+        //     const method = POS_STATE.paymentMethod; // 'cash', 'khqr', or 'aba'
+        //     if (method === 'cash') {
+        //         const cash = parseFloat(document.getElementById('cashInput').value) || 0;
+        //         if (cash < POS_STATE.totalAmount) {
+        //             showToast('Insufficient cash amount!', 'error');
+        //             return;
+        //         }
+        //         fetch("{{ route('admin.pos.checkout') }}", {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //             },
+        //             body: JSON.stringify({
+        //                 paid_amount: cash
+        //             })
+        //         }).then(r => r.json()).then(d => {
+        //             if (d.error) {
+        //                 showToast(d.error, 'error');
+        //                 return;
+        //             }
+        //             window.open(`/admin/pos/receipt/${d.sale_id}`, '_blank');
+        //             location.reload();
+        //         });
+        //         return;
+        //     }
+        //     if (POS_STATE.totalAmount <= 0) {
+        //         showToast('Cart is empty!', 'error');
+        //         return;
+        //     }
+        //     const btn = document.getElementById('checkoutBtn');
+        //     btn.disabled = true;
+        //     btn.innerHTML = '⏳ Generating QR...';
+        //     fetch("{{ route('admin.pos.generateKhqr') }}", {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //             },
+        //             body: JSON.stringify({
+        //                 amount: POS_STATE.totalAmount
+        //             })
+        //         })
+        //         .then(async res => {
+        //             const d = await res.json();
+        //             if (!res.ok || d.error) throw new Error(d.error || 'QR generation failed');
+        //             return d;
+        //         })
+        //         .then(d => {
+        //             showQrModal(d);
+        //             startCountdown(d.expires_at);
+        //             pollBothPayments(d.usd.md5, d.khr.md5, d.expires_at);
+        //         })
+        //         .catch(err => showToast('Could not generate QR: ' + err.message, 'error'))
+        //         .finally(() => {
+        //             btn.disabled = false;
+        //             btn.innerHTML = '✓ Checkout';
+        //         });
+            
+        //     if (method === 'aba') {
+        //         if (POS_STATE.totalAmount <= 0) { showToast('Cart is empty!', 'error'); return; }
+
+        //         const btn = document.getElementById('checkoutBtn');
+        //         btn.disabled = true;
+        //         btn.innerHTML = '⏳ Generating ABA QR...';
+
+        //         fetch("{{ route('admin.pos.payway.generate') }}", {
+        //             method: 'POST',
+        //             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        //             body: JSON.stringify({ amount: POS_STATE.totalAmount })
+        //         })
+        //         .then(r => r.json())
+        //         .then(data => {
+        //             if (data.error) { showToast(data.error, 'error'); return; }
+        //             showAbaModal(data);
+        //             pollAbaPayment();
+        //         })
+        //         .catch(err => showToast('ABA PayWay error: ' + err.message, 'error'))
+        //         .finally(() => { btn.disabled = false; btn.innerHTML = '✓ Checkout'; });
+        //         return;
+        //     }
+        // }
+
         function checkout() {
             const method = POS_STATE.paymentMethod;
+
+            // ── CASH ─────────────────────────────────────────
             if (method === 'cash') {
                 const cash = parseFloat(document.getElementById('cashInput').value) || 0;
                 if (cash < POS_STATE.totalAmount) {
@@ -1377,39 +1513,33 @@
                 }
                 fetch("{{ route('admin.pos.checkout') }}", {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        paid_amount: cash
-                    })
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ paid_amount: cash })
                 }).then(r => r.json()).then(d => {
-                    if (d.error) {
-                        showToast(d.error, 'error');
-                        return;
-                    }
+                    if (d.error) { showToast(d.error, 'error'); return; }
                     window.open(`/admin/pos/receipt/${d.sale_id}`, '_blank');
                     location.reload();
                 });
-                return;
+                return; // ← stop here
             }
+
+            // ── Guard: cart must not be empty for QR methods ──
             if (POS_STATE.totalAmount <= 0) {
                 showToast('Cart is empty!', 'error');
                 return;
             }
+
             const btn = document.getElementById('checkoutBtn');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Generating QR...';
-            fetch("{{ route('admin.pos.generateKhqr') }}", {
+
+            // ── KHQR (Bakong) ─────────────────────────────────
+            if (method === 'khqr') {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Generating QR...';
+
+                fetch("{{ route('admin.pos.generateKhqr') }}", {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        amount: POS_STATE.totalAmount
-                    })
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ amount: POS_STATE.totalAmount })
                 })
                 .then(async res => {
                     const d = await res.json();
@@ -1422,10 +1552,30 @@
                     pollBothPayments(d.usd.md5, d.khr.md5, d.expires_at);
                 })
                 .catch(err => showToast('Could not generate QR: ' + err.message, 'error'))
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = '✓ Checkout';
-                });
+                .finally(() => { btn.disabled = false; btn.innerHTML = '✓ Checkout'; });
+                return; // ← stop here
+            }
+
+            // ── ABA PayWay ────────────────────────────────────
+            if (method === 'aba') {
+                btn.disabled = true;
+                btn.innerHTML = '⏳ Generating ABA QR...';
+
+                fetch("{{ route('admin.pos.payway.generate') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ amount: POS_STATE.totalAmount })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) { showToast(data.error, 'error'); return; }
+                    showAbaModal(data);
+                    pollAbaPayment(data.tran_id);
+                })
+                .catch(err => showToast('ABA PayWay error: ' + err.message, 'error'))
+                .finally(() => { btn.disabled = false; btn.innerHTML = '✓ Checkout'; });
+                return; // ← stop here
+            }
         }
 
         // ── Poll & countdown ──────────────────────────────
@@ -1551,6 +1701,51 @@
             t.textContent = msg;
             document.body.appendChild(t);
             setTimeout(() => t.remove(), 3000);
+        }
+
+        function pollAbaPayment(tranId) {
+            if (POS_STATE.abaInterval) clearInterval(POS_STATE.abaInterval);
+            let attempts = 0;
+            POS_STATE.abaInterval = setInterval(async () => {   // ← store in POS_STATE
+                attempts++;
+                if (attempts > 60) {
+                    clearInterval(POS_STATE.abaInterval);
+                    showToast('ABA payment timed out', 'error');
+                    closeAbaModal();
+                    return;
+                }
+                try {
+                    const res  = await fetch("{{ route('admin.pos.payway.verify') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        clearInterval(POS_STATE.abaInterval);
+                        document.getElementById('abaWaiting').style.display = 'none';
+                        document.getElementById('abaSuccess').style.display = 'block';
+                        setTimeout(() => { window.location.href = data.receipt_url; }, 1500);
+                    }
+                } catch (e) {}
+            }, 5000);
+        }
+        
+        function showAbaModal(data) {
+            const qrSrc = data.qr_image ||
+                `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(data.qr_string)}`;
+            document.getElementById('abaQrImage').src = qrSrc;
+            document.getElementById('abaAmount').textContent = '$' + parseFloat(POS_STATE.totalAmount).toFixed(2);
+            document.getElementById('abaWaiting').style.display = 'flex';
+            document.getElementById('abaSuccess').style.display = 'none';
+            // ✅ show using flex so centering works
+            const bd = document.getElementById('abaBackdrop');
+            bd.style.display = 'flex';
+        }
+
+        function closeAbaModal() {
+            if (POS_STATE.abaInterval) clearInterval(POS_STATE.abaInterval);
+            document.getElementById('abaBackdrop').style.display = 'none';
+            document.getElementById('abaQrImage').src = '';
         }
     </script>
 @endpush

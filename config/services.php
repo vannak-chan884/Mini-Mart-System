@@ -35,4 +35,13 @@ return [
         ],
     ],
 
+    'aba_payway' => [
+        'merchant_id'  => env('ABA_MERCHANT_ID'),
+        'api_key'      => env('ABA_API_KEY'),
+        'public_key'   => env('ABA_PUBLIC_KEY'),
+        'private_key'  => env('ABA_RSA_PRIVATE_KEY'),
+        'api_url'      => env('ABA_API_URL'),
+        'status_url'  => env('ABA_STATUS_URL'),
+    ],
+
 ];

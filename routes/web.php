@@ -19,30 +19,35 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
-        Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-        
-        Route::resource('categories', CategoryController::class);
-        Route::resource('products', ProductController::class);
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
-        // POS Routes
-        Route::get('pos', [PosController::class, 'index'])->name('pos.index');
-        Route::post('pos/add', [PosController::class, 'addToCart'])->name('pos.add');
-        Route::post('pos/update', [PosController::class, 'updateCart'])->name('pos.update');
-        Route::post('pos/remove', [PosController::class, 'removeFromCart'])->name('pos.remove');
-        Route::post('pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+    Route::resource('categories', CategoryController::class);
+    Route::resource('products', ProductController::class);
 
-        Route::get('pos-cart-data', function () {
-            return response()->json(session('cart', []));
-        });
-        Route::get('pos/search', [PosController::class, 'search'])->name('pos.search');
+    // POS Routes
+    Route::get('pos', [PosController::class, 'index'])->name('pos.index');
+    Route::post('pos/add', [PosController::class, 'addToCart'])->name('pos.add');
+    Route::post('pos/update', [PosController::class, 'updateCart'])->name('pos.update');
+    Route::post('pos/remove', [PosController::class, 'removeFromCart'])->name('pos.remove');
+    Route::post('pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
 
-        Route::get('pos/receipt/{sale}', [PosController::class, 'receipt'])->name('pos.receipt');
+    // ABA PayWay Routes
+    Route::post('/pos/payway/generate',  [PosController::class, 'generatePayway'])->name('pos.payway.generate');
+    Route::get('/pos/payway/callback',   [PosController::class, 'paywayCallback'])->name('pos.payway.callback');
+    Route::post('/pos/payway/verify',    [PosController::class, 'verifyPayway'])->name('pos.payway.verify');
 
-        Route::post('pos/generate-khqr', [PosController::class, 'generateKhqr'])->name('pos.generateKhqr');
+    Route::get('pos-cart-data', function () {
+        return response()->json(session('cart', []));
+    });
+    Route::get('pos/search', [PosController::class, 'search'])->name('pos.search');
 
-        Route::post('pos/verify-khqr', [PosController::class, 'verifyKhqr'])->name('pos.verifyKhqr');
+    Route::get('pos/receipt/{sale}', [PosController::class, 'receipt'])->name('pos.receipt');
 
-        Route::resource('sales', SaleController::class)->only(['index', 'show', 'destroy']);
+    Route::post('pos/generate-khqr', [PosController::class, 'generateKhqr'])->name('pos.generateKhqr');
+
+    Route::post('pos/verify-khqr', [PosController::class, 'verifyKhqr'])->name('pos.verifyKhqr');
+
+    Route::resource('sales', SaleController::class)->only(['index', 'show', 'destroy']);
 });
 
 Route::middleware('auth')->group(function () {
@@ -51,4 +56,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

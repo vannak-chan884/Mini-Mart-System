@@ -258,7 +258,7 @@
                             <div class="product-cat">{{ $item->product->category->name }}</div>
                             @endif
                         </td>
-                        <td><span class="qty">× {{ $item->quantity }}</span></td>
+                        <td><span class="qty">x {{ $item->quantity }}</span></td>
                         <td><span class="price">${{ number_format($item->price, 2) }}</span></td>
                         <td><span class="subtotal">${{ number_format($item->price * $item->quantity, 2) }}</span></td>
                     </tr>

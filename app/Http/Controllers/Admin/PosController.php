@@ -7,12 +7,14 @@ use App\Models\Product;
 use App\Models\StockHistory;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use KHQR\BakongKHQR;
 use KHQR\Helpers\KHQRData;
+use App\Services\AbaPaywayService;
 use KHQR\Models\IndividualInfo;
 
 class PosController extends Controller
@@ -169,9 +171,7 @@ class PosController extends Controller
         return view('admin.pos.receipt', compact('sale'));
     }
 
-    // =========================================================
     // GENERATE BOTH QR CODES (USD + KHR) at once
-    // =========================================================
     public function generateKhqr(Request $request)
     {
         try {
@@ -250,9 +250,7 @@ class PosController extends Controller
         }
     }
 
-    // =========================================================
     // VERIFY — with double-processing guard
-    // =========================================================
     public function verifyKhqr(Request $request)
     {
         try {
@@ -367,9 +365,7 @@ class PosController extends Controller
         }
     }
 
-    // =========================================================
     // HELPERS
-    // =========================================================
     private function qrToImage(string $qrString): string
     {
         $url      = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . urlencode($qrString);
@@ -404,7 +400,8 @@ class PosController extends Controller
                 'paid_amount'    => $paidAmount,
                 'change_amount'  => 0,
                 'payment_method' => $method,
-                'bakong_hash'  => $hash,
+                'bakong_hash'    => $method !== 'aba_payway' ? $hash : null,
+                'aba_tran_id'    => $method === 'aba_payway'  ? $hash : null,
             ]);
 
             foreach ($cart as $productId => $item) {
@@ -433,36 +430,6 @@ class PosController extends Controller
             throw $e;
         }
     }
-
-    // private function sendTelegramNotification($sale, $method = null)
-    // {
-    //     try {
-    //         $m = strtolower($method ?? $sale->payment_method);
-    //         $paymentLabel = match(true) {
-    //             $m === 'cash'            => 'Cash 💵',
-    //             $m === 'khqr_usd'        => 'KHQR — USD 🇺🇸✅',
-    //             $m === 'khqr_khr'        => 'KHQR — KHR 🇰🇭✅',
-    //             str_contains($m, 'khqr') => 'KHQR Bakong ✅',
-    //             default                  => strtoupper($m),
-    //         };
-
-    //         $message  = "🧾 *New Sale!*\n";
-    //         $message .= "Invoice: `{$sale->invoice_no}`\n";
-    //         $message .= "Total: $" . number_format($sale->total_amount, 2) . "\n";
-    //         $message .= "Payment: {$paymentLabel}\n";
-    //         $message .= "Time: " . now()->setTimezone('Asia/Phnom_Penh')->format('d M Y, h:i A');
-
-    //         Http::withoutVerifying()
-    //             ->post("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage", [
-    //                 'chat_id'    => env('TELEGRAM_CHAT_ID'),
-    //                 'text'       => $message,
-    //                 'parse_mode' => 'Markdown'
-    //             ]);
-    //     } catch (\Exception $e) {
-    //         Log::warning('Telegram notification failed', ['msg' => $e->getMessage()]);
-    //     }
-    // }
-
     private function sendTelegramNotification($sale, $method = null, $txn = [])
     {
         try {
@@ -536,5 +503,81 @@ class PosController extends Controller
         } catch (\Exception $e) {
             Log::warning('Telegram notification failed', ['msg' => $e->getMessage()]);
         }
+    }
+
+    // ABA PayWay
+    public function generatePayway(Request $request)
+    {
+        $cart = session('cart', []);
+        if (empty($cart)) {
+            return response()->json(['error' => 'Cart is empty'], 422);
+        }
+
+        $total   = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+        $invoice = 'ABA' . strtoupper(substr(uniqid(), -8));
+
+        $payway = new AbaPaywayService();
+        $result = $payway->createPayment($total, $invoice);
+
+        $status = (string)($result['status'] ?? 'error');
+
+        // ✅ Handle specific ABA error codes gracefully
+        if ($status !== '0' && $status !== '00') {
+            $errorMessages = [
+                '21' => 'ABA PayWay credentials have expired. Please contact ABA Bank to renew.',
+                '1'  => 'Invalid hash signature.',
+                '04' => 'Invalid request data.',
+                '99' => 'ABA PayWay service unavailable.',
+            ];
+
+            $message = $errorMessages[$status] ?? 'ABA PayWay error (code: ' . $status . ')';
+
+            return response()->json(['error' => $message], 422); // ← 422 not 500
+        }
+
+        session(['payway_tran_id' => $result['tran_id'], 'payway_amount' => $total]);
+
+        return response()->json([
+            'tran_id'   => $result['tran_id'],
+            'qr_string' => $result['qr_string'],
+            'qr_image'  => $result['qr_image'],  // ✅ add this
+            'deeplink'  => $result['deeplink'],
+        ]);
+    }
+
+    public function verifyPayway(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $tranId = session('payway_tran_id');
+        $amount = session('payway_amount');
+
+        if (!$tranId) {
+            return response()->json(['success' => false]);
+        }
+
+        $payway = new AbaPaywayService();
+        $status = $payway->checkTransaction($tranId);
+
+        if (($status['status']['code'] ?? '') === '0') {
+            $sale = $this->completeSale('aba_payway', $amount, $tranId);
+
+            session()->forget(['payway_tran_id', 'payway_amount']);
+
+            $this->sendTelegramNotification($sale, 'aba_payway');
+
+            return response()->json([
+                'success'     => true,
+                'sale_id'     => $sale->id,
+                'receipt_url' => route('admin.pos.receipt', $sale->id),
+            ]);
+        }
+
+        return response()->json(['success' => false]);
+    }
+
+    public function paywayCallback(Request $request)
+    {
+        // ABA redirects here after payment — just go back to POS
+        return redirect()->route('admin.pos.index')
+                        ->with('success', 'ABA PayWay payment completed.');
     }
 }

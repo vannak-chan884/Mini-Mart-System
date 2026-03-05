@@ -18,11 +18,11 @@ class DashboardController extends Controller
         $thirtyDaysAgo = Carbon::now('Asia/Phnom_Penh')->subDays(30);
 
         // ── Today stats ──────────────────────────────
-        $todaySales   = Sale::whereDate('created_at', $today)->count();
+        $todaySales = Sale::whereDate('created_at', $today)->count();
         $todayRevenue = Sale::whereDate('created_at', $today)->sum('total_amount');
 
         // ── All-time stats ───────────────────────────
-        $totalSales   = Sale::count();
+        $totalSales = Sale::count();
         $totalRevenue = Sale::sum('total_amount');
 
         // ── Product stats ────────────────────────────
