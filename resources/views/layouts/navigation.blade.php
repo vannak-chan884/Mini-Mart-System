@@ -562,7 +562,7 @@
         <aside class="sidebar" id="sidebar">
 
             {{-- Logo --}}
-            <a href="{{ route('dashboard') }}" class="sidebar-logo">
+            <a href="{{ route('admin.dashboard.index') }}" class="sidebar-logo">
                 <div class="sidebar-logo-icon">🏪</div>
                 <div class="sidebar-logo-text">
                     <div class="sidebar-logo-name">{{ config('app.name', 'Mini Mart') }}</div>
@@ -574,7 +574,7 @@
             <nav class="sidebar-nav">
                 <div class="nav-section-label">Main</div>
 
-                <a href="{{ route('dashboard') }}"
+                <a href="{{ route('admin.dashboard.index') }}"
                     class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <span class="nav-icon">📊</span>
                     Dashboard

@@ -1,79 +1,180 @@
 @extends('layouts.app')
 @section('title', 'Products')
+
+@push('styles')
+<style>
+    :root {
+        --blue:     #003087;
+        --blue-mid: #1a4db3;
+        --red:      #CC0001;
+        --border:   rgba(255,255,255,0.07);
+        --card:     rgba(255,255,255,0.03);
+        --muted:    #6B7280;
+        --muted-lt: #9CA3AF;
+        --text:     #E8E4DC;
+    }
+
+    /* Header */
+    .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+    .page-heading { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: #fff; }
+    .page-heading span { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 10px; }
+
+    .btn-add { display: inline-flex; align-items: center; gap: 7px; padding: 10px 18px; background: linear-gradient(135deg, var(--blue), var(--blue-mid)); color: #fff; border-radius: 10px; font-size: 13px; font-weight: 600; font-family: 'DM Sans', sans-serif; text-decoration: none; transition: all 0.2s; box-shadow: 0 3px 12px rgba(0,48,135,0.35); }
+    .btn-add:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,48,135,0.45); }
+
+    /* Alert */
+    .alert-success { display: flex; align-items: center; gap: 10px; background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.3); border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px; color: #86EFAC; font-weight: 500; }
+
+    /* Table card */
+    .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .table-card-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+    .table-card-title { font-size: 13px; font-weight: 700; color: var(--muted-lt); text-transform: uppercase; letter-spacing: 0.7px; }
+    .table-total { font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.04); border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; font-family: 'IBM Plex Mono', monospace; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; }
+    thead th { padding: 11px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; background: rgba(255,255,255,0.02); }
+    thead th.right { text-align: right; }
+
+    tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.025); }
+    tbody td { padding: 12px 16px; font-size: 13px; color: var(--text); vertical-align: middle; }
+    tbody td.right { text-align: right; }
+
+    /* Row number */
+    .row-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted); }
+
+    /* Barcode */
+    .barcode-val { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: #93C5FD; background: rgba(0,48,135,0.15); border: 1px solid rgba(0,48,135,0.25); padding: 2px 8px; border-radius: 5px; white-space: nowrap; }
+
+    /* Product name + image */
+    .product-cell { display: flex; align-items: center; gap: 11px; }
+    .product-thumb { width: 42px; height: 42px; border-radius: 9px; object-fit: cover; background: rgba(255,255,255,0.05); border: 1px solid var(--border); flex-shrink: 0; }
+    .product-name { font-weight: 600; color: #fff; font-size: 13.5px; }
+
+    /* Category badge */
+    .cat-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; font-size: 12px; color: var(--muted-lt); white-space: nowrap; }
+
+    /* Price */
+    .price-val { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; color: #4ADE80; }
+
+    /* Stock */
+    .stock-ok { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text); }
+    .stock-low { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 700; color: #FCA5A5; display: inline-flex; align-items: center; gap: 5px; }
+    .stock-low::before { content: '⚠'; font-size: 11px; }
+
+    /* Actions */
+    .action-wrap { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+    .action-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif; text-decoration: none; cursor: pointer; border: 1px solid; transition: all 0.15s; white-space: nowrap; }
+    .action-edit { background: rgba(0,48,135,0.15); border-color: rgba(0,48,135,0.3); color: #93C5FD; }
+    .action-edit:hover { background: rgba(0,48,135,0.3); border-color: rgba(0,48,135,0.5); }
+    .action-delete { background: rgba(204,0,1,0.1); border-color: rgba(204,0,1,0.25); color: #FCA5A5; }
+    .action-delete:hover { background: rgba(204,0,1,0.22); border-color: rgba(204,0,1,0.45); }
+
+    /* Empty state */
+    .empty-state { padding: 56px 24px; text-align: center; }
+    .empty-icon { font-size: 44px; margin-bottom: 14px; opacity: 0.35; }
+    .empty-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 6px; }
+    .empty-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+</style>
+@endpush
+
 @section('content')
-    <div class="max-w-5xl mx-auto py-6">
 
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="dark:text-white text-2xl font-bold">Products</h2>
-
-            <a href="{{ route('admin.products.create') }}"
-                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                + Add Product
-            </a>
-        </div>
-
-        @if (session('success'))
-            <div class="bg-green-100 text-green-700 p-3 rounded mb-4">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            <table class="w-full text-left text-sm">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="p-3">#</th>
-                        <th class="p-3">Barcode</th>
-                        <th class="p-3">Name</th>
-                        <th class="p-3">Image</th>
-                        <th class="p-3">Category</th>
-                        <th class="p-3">Sell Price</th>
-                        <th class="p-3">Stock</th>
-                        <th class="p-3 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($products as $product)
-                        <tr class="border-t">
-                            <td class="p-3">{{ $loop->iteration }}</td>
-                            <td class="p-3">{{ $product->barcode }}</td>
-                            <td class="p-3">{{ $product->name }}</td>
-                            <td class="p-3">
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                    class="w-12 h-12 object-cover rounded-lg">
-                            </td>
-                            <td class="p-3">{{ $product->category->name }}</td>
-                            <td class="p-3">${{ number_format($product->sell_price, 2) }}</td>
-                            <td class="p-3">
-                                <span
-                                    class="{{ $product->stock <= $product->low_stock_alert ? 'text-red-600 font-semibold' : '' }}">
-                                    {{ $product->stock }}
-                                </span>
-                            </td>
-                            <td class="p-3 text-right space-x-2">
-                                <a href="{{ route('admin.products.edit', $product) }}"
-                                    class="text-blue-600 hover:underline">Edit</a>
-
-                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST"
-                                    class="inline-block" onsubmit="return confirm('Delete this product?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="text-red-600 hover:underline">
-                                        Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="p-4 text-center text-gray-500">
-                                No products found.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
+{{-- Header --}}
+<div class="page-header">
+    <div class="page-heading">
+        📦 Products
+        <span>{{ $products->count() }} total</span>
     </div>
+    <a href="{{ route('admin.products.create') }}" class="btn-add">+ Add Product</a>
+</div>
+
+{{-- Alert --}}
+@if(session('success'))
+<div class="alert-success">✅ {{ session('success') }}</div>
+@endif
+
+{{-- Table --}}
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">All Products</div>
+        <span class="table-total">{{ $products->count() }} records</span>
+    </div>
+
+    @if($products->count())
+    <table>
+        <thead>
+            <tr>
+                <th style="width:48px">#</th>
+                <th>Product</th>
+                <th>Barcode</th>
+                <th>Category</th>
+                <th>Sell Price</th>
+                <th>Stock</th>
+                <th class="right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($products as $product)
+            <tr>
+                <td><span class="row-num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span></td>
+
+                <td>
+                    <div class="product-cell">
+                        <img class="product-thumb"
+                             src="{{ $product->image ? asset('storage/'.$product->image) : asset('images/no-image.png') }}"
+                             alt="{{ $product->name }}">
+                        <span class="product-name">{{ $product->name }}</span>
+                    </div>
+                </td>
+
+                <td>
+                    @if($product->barcode)
+                    <span class="barcode-val">{{ $product->barcode }}</span>
+                    @else
+                    <span style="color:var(--muted);font-size:12px;">—</span>
+                    @endif
+                </td>
+
+                <td>
+                    <span class="cat-badge">🗂️ {{ $product->category->name ?? '—' }}</span>
+                </td>
+
+                <td><span class="price-val">${{ number_format($product->sell_price, 2) }}</span></td>
+
+                <td>
+                    @if($product->stock <= $product->low_stock_alert)
+                    <span class="stock-low">{{ $product->stock }}</span>
+                    @else
+                    <span class="stock-ok">{{ $product->stock }}</span>
+                    @endif
+                </td>
+
+                <td class="right">
+                    <div class="action-wrap">
+                        <a href="{{ route('admin.products.edit', $product) }}" class="action-btn action-edit">✏️ Edit</a>
+                        <form action="{{ route('admin.products.destroy', $product) }}" method="POST"
+                              onsubmit="return confirm('Delete « {{ $product->name }} »? This cannot be undone.')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="action-btn action-delete">🗑 Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    @else
+    <div class="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-title">No products yet</div>
+        <div class="empty-sub">Add your first product to start selling.</div>
+        <a href="{{ route('admin.products.create') }}" class="btn-add">+ Add First Product</a>
+    </div>
+    @endif
+</div>
+
 @endsection
