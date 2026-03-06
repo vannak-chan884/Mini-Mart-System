@@ -11,10 +11,21 @@
         rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
-        body { font-family: 'DM Sans', sans-serif; }
-        .font-playfair { font-family: 'Playfair Display', serif; }
-        .font-mono-ibm { font-family: 'IBM Plex Mono', monospace; }
-        .font-khmer    { font-family: 'Noto Sans Khmer', sans-serif; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .font-playfair {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .font-mono-ibm {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .font-khmer {
+            font-family: 'Noto Sans Khmer', sans-serif;
+        }
 
         /* Noise texture overlay */
         body::before {
@@ -28,41 +39,71 @@
             opacity: 1;
             transition: opacity 0.25s ease;
         }
-        html:not(.dark) body::before { opacity: 0.01; }
+
+        html:not(.dark) body::before {
+            opacity: 0.01;
+        }
 
         /* Sidebar right-edge glow */
         .sidebar-glow::after {
             content: '';
             position: absolute;
-            top: 0; right: -1px;
-            width: 1px; height: 100%;
-            background: linear-gradient(180deg, transparent 0%, rgba(0,48,135,0.4) 30%, rgba(0,48,135,0.4) 70%, transparent 100%);
+            top: 0;
+            right: -1px;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 48, 135, 0.4) 30%, rgba(0, 48, 135, 0.4) 70%, transparent 100%);
             pointer-events: none;
             transition: opacity 0.25s ease;
         }
-        html:not(.dark) .sidebar-glow::after { opacity: 0; }
+
+        html:not(.dark) .sidebar-glow::after {
+            opacity: 0;
+        }
 
         /* Active nav left-bar indicator */
         .nav-active-bar::before {
             content: '';
             position: absolute;
-            left: 0; top: 20%; bottom: 20%;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
             width: 3px;
             background: linear-gradient(180deg, #1a4db3, #4a90d9);
             border-radius: 0 2px 2px 0;
         }
 
         /* Theme toggle icon animation */
-        #themeToggle { position: relative; overflow: hidden; }
+        #themeToggle {
+            position: relative;
+            overflow: hidden;
+        }
+
         #themeToggle .icon-dark,
         #themeToggle .icon-light {
             transition: transform 0.3s ease, opacity 0.3s ease;
             position: absolute;
         }
-        html:not(.dark) #themeToggle .icon-dark  { transform: translateY(0);    opacity: 1; }
-        html:not(.dark) #themeToggle .icon-light { transform: translateY(120%); opacity: 0; }
-        html.dark #themeToggle .icon-dark  { transform: translateY(-120%); opacity: 0; }
-        html.dark #themeToggle .icon-light { transform: translateY(0);     opacity: 1; }
+
+        html:not(.dark) #themeToggle .icon-dark {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        html:not(.dark) #themeToggle .icon-light {
+            transform: translateY(120%);
+            opacity: 0;
+        }
+
+        html.dark #themeToggle .icon-dark {
+            transform: translateY(-120%);
+            opacity: 0;
+        }
+
+        html.dark #themeToggle .icon-light {
+            transform: translateY(0);
+            opacity: 1;
+        }
 
         /* ── Sidebar positioning ──────────────────────────────
            Desktop (≥768px): static in the flex row, always visible.
@@ -71,6 +112,7 @@
             /* desktop default — static in flex flow */
             position: relative;
         }
+
         @media (max-width: 767px) {
             #sidebar {
                 position: fixed;
@@ -81,29 +123,55 @@
                 transform: translateX(-100%);
                 transition: transform 0.3s ease, box-shadow 0.3s ease;
             }
+
             #sidebar.sidebar-open {
                 transform: translateX(0);
                 box-shadow: 8px 0 32px rgba(0, 0, 0, 0.35);
             }
+
             #sidebarOverlay {
                 display: none;
             }
+
             #sidebarOverlay.overlay-open {
                 display: block;
             }
         }
 
         /* Scrollbars */
-        .scrollbar-sidebar::-webkit-scrollbar       { width: 4px; }
-        .scrollbar-sidebar::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 2px; }
+        .scrollbar-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
 
-        .scrollbar-content::-webkit-scrollbar       { width: 6px; }
-        .scrollbar-content::-webkit-scrollbar-track { background: transparent; }
-        .scrollbar-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 3px; }
+        .scrollbar-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollbar-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 2px;
+        }
+
+        .scrollbar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollbar-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 3px;
+        }
 
         /* Smooth theme transition */
-        body, aside, header, nav a, #userTrigger, #userDropdown {
+        body,
+        aside,
+        header,
+        nav a,
+        #userTrigger,
+        #userDropdown {
             transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
         }
     </style>
@@ -128,7 +196,8 @@
                 class="flex items-center gap-[11px] px-5 py-6
                        border-b border-black/[0.07] dark:border-white/[0.07]
                        no-underline flex-shrink-0">
-                <div class="w-9 h-9 rounded-[10px] flex items-center justify-center text-[17px] flex-shrink-0
+                <div
+                    class="w-9 h-9 rounded-[10px] flex items-center justify-center text-[17px] flex-shrink-0
                             bg-gradient-to-br from-[#003087] to-[#1a4db3]
                             shadow-[0_0_16px_rgba(0,48,135,0.5)]">
                     🏪
@@ -146,7 +215,8 @@
             {{-- Navigation --}}
             <nav class="flex-1 px-3 py-4 overflow-y-auto scrollbar-sidebar flex flex-col gap-0.5">
 
-                <div class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-3 pb-1.5">
+                <div
+                    class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-3 pb-1.5">
                     Main
                 </div>
 
@@ -170,7 +240,8 @@
                     POS Terminal
                 </a>
 
-                <div class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
+                <div
+                    class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
                     Inventory
                 </div>
 
@@ -194,7 +265,8 @@
                     Categories
                 </a>
 
-                <div class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
+                <div
+                    class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
                     Reports
                 </div>
 
@@ -221,7 +293,8 @@
                            hover:bg-black/[0.06] dark:hover:bg-white/[0.07]
                            transition-all duration-150 select-none">
 
-                    <div class="w-8 h-8 rounded-[9px] flex items-center justify-center text-[13px] font-bold
+                    <div
+                        class="w-8 h-8 rounded-[9px] flex items-center justify-center text-[13px] font-bold
                                 text-white flex-shrink-0 bg-gradient-to-br from-[#003087] to-[#1a4db3]">
                         {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                     </div>
@@ -271,8 +344,7 @@
         </aside>
 
         {{-- Mobile overlay — hidden by default, shown via JS on mobile only --}}
-        <div id="sidebarOverlay" onclick="closeSidebar()"
-            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"
+        <div id="sidebarOverlay" onclick="closeSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"
             style="display:none;"></div>
 
         {{-- ══ MAIN AREA ════════════════════════════════════════ --}}
@@ -317,7 +389,8 @@
                     </div>
 
                     {{-- Clock --}}
-                    <div class="hidden md:flex items-center gap-2 h-9 px-3.5 rounded-[9px]
+                    <div
+                        class="hidden md:flex items-center gap-2 h-9 px-3.5 rounded-[9px]
                                 bg-black/[0.04] dark:bg-white/[0.04]
                                 border border-black/[0.08] dark:border-white/[0.07]
                                 font-mono-ibm text-xs text-[#9CA3AF] whitespace-nowrap">
@@ -404,12 +477,17 @@
             const d = document.getElementById('clock-date');
             const t = document.getElementById('clock-time');
             if (d) d.textContent = now.toLocaleDateString('en-GB', {
-                day: '2-digit', month: 'short', year: 'numeric',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
                 timeZone: 'Asia/Phnom_Penh'
             });
             if (t) t.textContent = now.toLocaleTimeString('en-US', {
-                hour: '2-digit', minute: '2-digit', second: '2-digit',
-                hour12: true, timeZone: 'Asia/Phnom_Penh'
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true,
+                timeZone: 'Asia/Phnom_Penh'
             });
         }
         updateClock();

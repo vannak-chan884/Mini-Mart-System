@@ -8,38 +8,79 @@
             overflow: hidden !important;
         }
 
-        /* Scrollbars — cannot be done in Tailwind */
-        #product-grid::-webkit-scrollbar {
-            width: 5px;
+        /* ── Design Tokens — Light default, dark: overrides ─── */
+        :root {
+            --bg: #F0F2F8;
+            --panel: #FFFFFF;
+            --surface: #F7F8FC;
+            --surface-2: #EEF0F7;
+            --glass: rgba(0, 0, 0, 0.03);
+            --glass-2: rgba(0, 0, 0, 0.05);
+            --border: rgba(0, 0, 0, 0.07);
+            --border-2: rgba(0, 0, 0, 0.11);
+            --blue: #3B82F6;
+            --blue-dim: #1D4ED8;
+            --green: #22C55E;
+            --red: #EF4444;
+            --amber: #F59E0B;
+            --text: #1A1A2E;
+            --text-2: #4B5563;
+            --text-3: #9CA3AF;
+            --radius: 14px;
         }
 
-        #product-grid::-webkit-scrollbar-track {
-            background: transparent;
+        html.dark {
+            --bg: #07080F;
+            --panel: #0D0E1A;
+            --surface: #12131F;
+            --surface-2: #181929;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-2: rgba(255, 255, 255, 0.055);
+            --border: rgba(255, 255, 255, 0.06);
+            --border-2: rgba(255, 255, 255, 0.11);
+            --text: #EEEAE2;
+            --text-2: #8B909E;
+            --text-3: #555968;
         }
 
-        #product-grid::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.07);
+        /* ── Scrollbars ─────────────────────────────────────── */
+        #product-grid::-webkit-scrollbar,
+        #cart-items::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        #product-grid::-webkit-scrollbar-thumb,
+        #cart-items::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.1);
             border-radius: 3px;
         }
 
-        #cart-items::-webkit-scrollbar {
-            width: 4px;
+        html.dark #product-grid::-webkit-scrollbar-thumb,
+        html.dark #cart-items::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.07);
         }
 
-        #cart-items::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: transparent;
         }
 
-        #cart-items::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.07);
-            border-radius: 2px;
-        }
-
-        /* Animations */
-        @keyframes slideIn {
+        /* ── Keyframes ──────────────────────────────────────── */
+        @keyframes fadeSlideUp {
             from {
                 opacity: 0;
-                transform: translateX(8px);
+                transform: translateY(12px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes itemIn {
+            from {
+                opacity: 0;
+                transform: translateX(14px);
             }
 
             to {
@@ -48,19 +89,7 @@
             }
         }
 
-        @keyframes modalIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-
-        @keyframes pulseDot {
+        @keyframes pulse {
 
             0%,
             100% {
@@ -69,26 +98,122 @@
             }
 
             50% {
-                opacity: 0.3;
-                transform: scale(0.7);
+                opacity: .3;
+                transform: scale(.65);
             }
         }
 
-        .cart-item {
-            animation: slideIn 0.18s ease;
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
         }
 
-        .modal-in {
-            animation: modalIn 0.3s ease;
+        .modal-anim {
+            animation: fadeSlideUp .28s cubic-bezier(.34, 1.3, .64, 1);
+        }
+
+        .cart-item {
+            animation: itemIn .22s cubic-bezier(.34, 1.3, .64, 1);
         }
 
         .pulse-dot {
-            animation: pulseDot 1.4s ease infinite;
+            animation: pulse 1.4s ease infinite;
         }
 
-        /* Product image zoom */
+        .countdown-bar {
+            transition: width 1s linear, background-color .8s;
+        }
+
+        /* ── Product Grid ────────────────────────────────────── */
+        #product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            flex: 1;
+            align-content: start;
+        }
+
+        @media (max-width:1024px) {
+            #product-grid:not(.list-view) {
+                grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+            }
+        }
+
+        /* ── Product Card ────────────────────────────────────── */
+        .product-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: border-color .2s, box-shadow .2s, transform .2s cubic-bezier(.34, 1.4, .64, 1);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        .product-card:hover {
+            border-color: rgba(59, 130, 246, .45);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 32px rgba(0, 0, 0, .12), 0 0 0 1px rgba(59, 130, 246, .18);
+        }
+
+        html.dark .product-card {
+            background: var(--surface);
+            box-shadow: none;
+        }
+
+        html.dark .product-card:hover {
+            box-shadow: 0 12px 36px rgba(0, 0, 0, .5), 0 0 0 1px rgba(59, 130, 246, .15);
+        }
+
+        .product-card:active {
+            transform: translateY(-1px);
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius);
+            background: linear-gradient(135deg, rgba(59, 130, 246, .06) 0%, transparent 55%);
+            opacity: 0;
+            transition: opacity .2s;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .product-card:hover::before {
+            opacity: 1;
+        }
+
+        .product-img-wrap {
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: var(--glass-2);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .product-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform .35s cubic-bezier(.34, 1.2, .64, 1);
+        }
+
         .product-card:hover .product-img {
-            transform: scale(1.05);
+            transform: scale(1.08);
         }
 
         /* Product name clamp */
@@ -99,51 +224,35 @@
             overflow: hidden;
         }
 
-        /* Grid layout — auto-fill not possible in Tailwind */
-        #product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 12px;
-            overflow-y: auto;
-            flex: 1;
-            padding-right: 4px;
-            align-content: start;
-        }
-
-        @media (max-width: 900px) {
-            #product-grid:not(.list-view) {
-                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            }
-        }
-
-        /* List view — structural changes not possible with Tailwind alone */
+        /* ── List View ───────────────────────────────────────── */
         #product-grid.list-view {
             grid-template-columns: 1fr;
-            gap: 6px;
+            gap: 5px;
         }
 
         #product-grid.list-view .product-card {
             flex-direction: row;
             align-items: stretch;
-            height: 66px;
+            height: 60px;
+            border-radius: 10px;
         }
 
         #product-grid.list-view .product-img-wrap {
-            width: 66px;
-            height: 66px;
+            width: 60px;
+            height: 60px;
             aspect-ratio: unset;
-            border-radius: 0;
             flex-shrink: 0;
+            border-radius: 0;
         }
 
         #product-grid.list-view .product-card:hover .product-img {
-            transform: scale(1.1);
+            transform: scale(1.12);
         }
 
         #product-grid.list-view .product-info {
             flex-direction: row;
             align-items: center;
-            padding: 0 14px;
+            padding: 0 12px;
             gap: 0;
             flex: 1;
             min-width: 0;
@@ -157,15 +266,15 @@
         }
 
         #product-grid.list-view .product-price {
-            font-size: 14px;
-            min-width: 60px;
+            font-size: 13px;
+            min-width: 58px;
             text-align: right;
             padding: 0 10px;
         }
 
         #product-grid.list-view .product-stock {
-            font-size: 11px;
-            min-width: 68px;
+            font-size: 10.5px;
+            min-width: 62px;
             text-align: right;
             padding-right: 10px;
             white-space: nowrap;
@@ -174,7 +283,7 @@
         #product-grid.list-view .btn-add {
             margin: 0;
             border-radius: 0 10px 10px 0;
-            padding: 0 16px;
+            padding: 0 14px;
             height: 100%;
             width: auto;
             align-self: stretch;
@@ -182,45 +291,46 @@
             align-items: center;
             justify-content: center;
             white-space: nowrap;
+            font-size: 11px;
         }
 
-        /* KHQR modal open state */
+        /* ── KHQR backdrop open ──────────────────────────────── */
         .qr-backdrop.open {
             display: flex;
         }
 
-        /* KHQR modal header shimmer line */
-        .qr-modal-header::before {
+        /* ── KHQR header shimmer ─────────────────────────────── */
+        .khqr-header::after {
             content: '';
             position: absolute;
             bottom: 0;
-            left: 10%;
-            right: 10%;
+            left: 8%;
+            right: 8%;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .25), transparent);
         }
 
-        /* Countdown bar transition */
-        .countdown-bar {
-            transition: width 1s linear, background 1s ease;
+        /* ── Cart items separator ───────────────────────────── */
+        .cart-item-sep {
+            border-bottom: 1px solid var(--border);
         }
 
-        /* Mobile layout */
-        @media (max-width: 700px) {
+        /* ── Mobile ──────────────────────────────────────────── */
+        @media (max-width:700px) {
             .pos-shell {
                 flex-direction: column;
             }
 
             .pos-right {
                 width: 100%;
-                height: 380px;
-                border-right: none;
-                border-top: 1px solid rgba(255, 255, 255, 0.07);
+                height: 370px;
+                border-left: none;
+                border-top: 1px solid var(--border);
             }
 
             .pos-left {
                 flex: none;
-                height: calc(100% - 380px);
+                height: calc(100% - 370px);
             }
 
             .qr-grid {
@@ -231,321 +341,378 @@
 @endpush
 
 @section('content')
-    <div class="pos-shell flex h-full overflow-hidden">
+    <div class="pos-shell flex h-full overflow-hidden" style="background:var(--bg);">
 
-        {{-- ── LEFT: PRODUCTS ───────────────────────────── --}}
-        <div class="pos-left flex-1 flex flex-col p-4 gap-3 min-w-0 overflow-hidden border-r border-white/[0.07]">
+        {{-- ══════ LEFT PANEL: CATALOGUE ══════════════════════ --}}
+        <div class="pos-left flex-1 flex flex-col min-w-0 overflow-hidden" style="border-right:1px solid var(--border);">
 
-            {{-- Search + View Toggle --}}
-            <div class="flex items-center gap-2.5 flex-shrink-0">
+            {{-- Top bar ──────────────────────────────────────── --}}
+            <div class="flex items-center gap-3 px-5 py-3.5 flex-shrink-0"
+                style="background:var(--panel);border-bottom:1px solid var(--border);">
+
+                {{-- Search ──────────────────────────────────── --}}
                 <div class="relative flex-1">
-                    <span
-                        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-[15px] text-gray-500 pointer-events-none">🔍</span>
-                    <input type="text" id="search"
-                        class="w-full bg-white/[0.05] border border-white/[0.07] rounded-[11px]
-                           py-[11px] pr-4 pl-[42px] text-sm text-[#E8E4DC] outline-none
-                           placeholder:text-gray-500/40
-                           focus:border-blue-500/50 focus:bg-[rgba(0,48,135,0.08)] focus:shadow-[0_0_0_3px_rgba(0,48,135,0.12)]
-                           transition-all duration-200"
-                        placeholder="Scan barcode or search product..." autofocus>
+                    <div class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200"
+                        style="color:var(--text-3);" id="searchIconWrap">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"
+                            viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="m21 21-4.35-4.35" />
+                        </svg>
+                    </div>
+                    <input type="text" id="search" autofocus placeholder="Search product or scan barcode…"
+                        style="width:100%;background:var(--glass);border:1px solid var(--border);
+                           color:var(--text);border-radius:10px;padding:9px 14px 9px 36px;
+                           font-size:13.5px;font-family:'DM Sans',sans-serif;
+                           outline:none;transition:all .22s;"
+                        onfocus="this.style.borderColor='rgba(59,130,246,.5)';this.style.background='rgba(59,130,246,.06)';this.style.boxShadow='0 0 0 3px rgba(59,130,246,.1)';document.getElementById('searchIconWrap').style.color='var(--blue)'"
+                        onblur="this.style.borderColor='';this.style.background='var(--glass)';this.style.boxShadow='';document.getElementById('searchIconWrap').style.color='var(--text-3)'">
                 </div>
-                {{-- View toggle --}}
-                <div class="flex gap-[3px] bg-white/[0.03] border border-white/[0.07] rounded-[10px] p-[3px] flex-shrink-0">
-                    <button id="btn-grid" onclick="setView('grid')" title="Grid view"
-                        class="view-btn w-[34px] h-[34px] rounded-[7px] border-0 bg-transparent text-gray-500
-                           flex items-center justify-center cursor-pointer transition-all duration-150
-                           hover:bg-white/[0.06] hover:text-gray-400">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <rect x="1" y="1" width="6" height="6" rx="1" />
-                            <rect x="9" y="1" width="6" height="6" rx="1" />
-                            <rect x="1" y="9" width="6" height="6" rx="1" />
-                            <rect x="9" y="9" width="6" height="6" rx="1" />
+
+                {{-- View Toggle ─────────────────────────────── --}}
+                <div class="flex gap-0.5 p-0.5 rounded-[9px] flex-shrink-0"
+                    style="background:var(--glass);border:1px solid var(--border);">
+                    <button id="btn-grid" onclick="setView('grid')" title="Grid"
+                        class="w-[30px] h-[30px] rounded-lg border-0 flex items-center justify-center cursor-pointer transition-all duration-150">
+                        <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                            <rect x="1" y="1" width="6" height="6" rx="1.5" />
+                            <rect x="9" y="1" width="6" height="6" rx="1.5" />
+                            <rect x="1" y="9" width="6" height="6" rx="1.5" />
+                            <rect x="9" y="9" width="6" height="6" rx="1.5" />
                         </svg>
                     </button>
-                    <button id="btn-list" onclick="setView('list')" title="List view"
-                        class="view-btn w-[34px] h-[34px] rounded-[7px] border-0 bg-transparent text-gray-500
-                           flex items-center justify-center cursor-pointer transition-all duration-150
-                           hover:bg-white/[0.06] hover:text-gray-400">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                            <rect x="1" y="2" width="14" height="2.5" rx="1" />
-                            <rect x="1" y="6.75" width="14" height="2.5" rx="1" />
-                            <rect x="1" y="11.5" width="14" height="2.5" rx="1" />
+                    <button id="btn-list" onclick="setView('list')" title="List"
+                        class="w-[30px] h-[30px] rounded-lg border-0 flex items-center justify-center cursor-pointer transition-all duration-150">
+                        <svg width="13" height="13" fill="currentColor" viewBox="0 0 16 16">
+                            <rect x="1" y="2" width="14" height="2.5" rx="1.2" />
+                            <rect x="1" y="6.75" width="14" height="2.5" rx="1.2" />
+                            <rect x="1" y="11.5" width="14" height="2.5" rx="1.2" />
                         </svg>
                     </button>
                 </div>
             </div>
 
-            {{-- Product Grid --}}
-            <div id="product-grid">
+            {{-- Product Grid ─────────────────────────────────── --}}
+            <div id="product-grid" class="p-4">
                 @foreach ($products as $product)
-                    <div
-                        class="product-card bg-white/[0.03] border border-white/[0.07] rounded-[13px]
-                             overflow-hidden cursor-pointer flex flex-col
-                             transition-all duration-[180ms] ease
-                             hover:border-[rgba(0,80,200,0.4)] hover:bg-[rgba(0,48,135,0.1)]
-                             hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.3)]
-                             active:translate-y-0">
-                        <div
-                            class="product-img-wrap w-full aspect-square overflow-hidden bg-white/[0.04] relative flex-shrink-0">
-                            <img class="product-img w-full h-full object-cover transition-transform duration-300"
+                    @php
+                        $oos = $product->stock <= 0;
+                        $low = !$oos && $product->stock <= 5;
+                    @endphp
+                    <div class="product-card">
+                        <div class="product-img-wrap">
+                            <img class="product-img"
                                 src="{{ $product->image ? asset('storage/' . $product->image) : asset('images/no-image.png') }}"
                                 alt="{{ $product->name }}" loading="lazy">
-                            @if ($product->stock <= 0)
-                                <div
-                                    class="absolute inset-0 bg-black/65 flex items-center justify-center
-                                        text-[11px] font-bold text-red-300 tracking-wide uppercase">
-                                    Out of Stock
+                            @if ($oos)
+                                <div class="absolute inset-0 flex items-center justify-center"
+                                    style="background:rgba(0,0,0,.65);backdrop-filter:blur(3px);z-index:2;">
+                                    <span
+                                        style="font-size:9.5px;font-weight:800;color:#FCA5A5;letter-spacing:1.2px;text-transform:uppercase;">Out
+                                        of Stock</span>
                                 </div>
                             @endif
+                            @if ($low)
+                                <div class="absolute top-2 right-2 rounded-md px-1.5 py-0.5"
+                                    style="background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);font-size:8.5px;font-weight:800;color:#D97706;letter-spacing:.5px;z-index:2;">
+                                    LOW</div>
+                            @endif
                         </div>
-                        <div class="product-info p-[9px_11px_11px] flex-1 flex flex-col gap-[3px]">
-                            <div class="product-name text-[12.5px] font-semibold text-[#E8E4DC] leading-[1.3]">
+                        <div class="product-info flex-1 flex flex-col" style="padding:9px 10px 0;">
+                            <div class="product-name"
+                                style="font-size:12px;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;">
                                 {{ $product->name }}</div>
-                            <div class="product-price font-mono text-[13px] font-bold text-green-400">
+                            <div class="product-price font-mono"
+                                style="font-size:13px;font-weight:700;color:#16A34A;margin-bottom:2px;">
                                 ${{ number_format($product->sell_price, 2) }}</div>
-                            <div class="product-stock text-[10.5px] text-gray-500">Stock: {{ $product->stock }}</div>
+                            <div class="product-stock" style="font-size:10px;color:var(--text-3);margin-bottom:9px;">
+                                {{ $product->stock }} in stock</div>
                         </div>
-                        <button
-                            class="btn-add mx-[10px] mb-[10px] py-[7px]
-                                   bg-gradient-to-br from-[#003087] to-[#1a4db3] text-white
-                                   border-0 rounded-lg text-xs font-semibold cursor-pointer
-                                   shadow-[0_2px_8px_rgba(0,48,135,0.3)]
-                                   hover:shadow-[0_4px_14px_rgba(0,48,135,0.45)]
-                                   disabled:bg-white/[0.06] disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none
-                                   transition-all duration-150"
-                            onclick="addToCart({{ $product->id }})" {{ $product->stock <= 0 ? 'disabled' : '' }}>
-                            + Add to Cart
+                        <button class="btn-add" onclick="addToCart({{ $product->id }})" {{ $oos ? 'disabled' : '' }}
+                            style="margin:0 9px 9px;padding:7px;border:0;border-radius:9px;font-size:11.5px;font-weight:700;
+                           font-family:'DM Sans',sans-serif;cursor:{{ $oos ? 'not-allowed' : 'pointer' }};transition:all .18s;
+                           {{ $oos
+                               ? 'background:rgba(0,0,0,.05);color:var(--text-3);'
+                               : 'background:linear-gradient(135deg,#1D4ED8,#3B82F6);color:#fff;box-shadow:0 2px 12px rgba(59,130,246,.25);' }}">
+                            {{ $oos ? 'Unavailable' : '+ Add to Cart' }}
                         </button>
                     </div>
                 @endforeach
             </div>
         </div>
 
-        {{-- ── RIGHT: CART ───────────────────────────────── --}}
-        <div class="pos-right w-80 flex-shrink-0 flex flex-col bg-white dark:bg-gray-900 overflow-hidden">
+        {{-- ══════ RIGHT PANEL: CART ═══════════════════════════ --}}
+        <div class="pos-right flex flex-col overflow-hidden flex-shrink-0"
+            style="width:300px;background:var(--panel);border-left:1px solid var(--border);">
 
-            {{-- Cart Header --}}
-            <div
-                class="flex items-center justify-between px-5 pt-[18px] pb-[14px] border-b border-gray-800/50 dark:border-white/[0.07] flex-shrink-0">
-                <div class="flex items-center gap-2 font-serif text-[17px] font-bold text-gray-800 dark:text-white">
-                    🛒 Cart
-                    <span id="cartCount"
-                        class="bg-[rgba(0,48,135,0.3)] border border-[rgba(0,48,135,0.45)] dark:text-blue-300
-                           text-[11px] font-bold py-[2px] px-2 rounded-full">0</span>
+            {{-- Cart Header ──────────────────────────────────── --}}
+            <div class="flex items-center justify-between px-5 py-4 flex-shrink-0"
+                style="border-bottom:1px solid var(--border);">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                        style="background:linear-gradient(135deg,#1D4ED8,#3B82F6);box-shadow:0 4px 14px rgba(59,130,246,.3);">
+                        🛒
+                    </div>
+                    <div>
+                        <div
+                            style="font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--text);line-height:1.1;">
+                            Order</div>
+                        <div id="cartSubtitle" style="font-size:10px;color:var(--text-3);margin-top:1px;">0 items</div>
+                    </div>
                 </div>
                 <button onclick="clearCart()"
-                    class="bg-transparent border border-red-800 dark:border-[rgba(204,0,1,0.25)] text-red-600 dark:text-red-400/60
-                       text-[11px] py-1 px-2.5 rounded-md cursor-pointer
-                       hover:border-[rgba(204,0,1,0.5)] dark:hover:text-red-300 dark:hover:bg-[rgba(204,0,1,0.08)]
-                       transition-all duration-150">Clear</button>
+                    style="background:none;border:1px solid rgba(239,68,68,.2);color:rgba(239,68,68,.5);
+                       font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;
+                       font-family:'DM Sans',sans-serif;transition:all .15s;"
+                    onmouseover="this.style.borderColor='rgba(239,68,68,.5)';this.style.color='#EF4444';this.style.background='rgba(239,68,68,.06)'"
+                    onmouseout="this.style.borderColor='rgba(239,68,68,.2)';this.style.color='rgba(239,68,68,.5)';this.style.background='none'">
+                    Clear
+                </button>
             </div>
 
-            {{-- Cart Items --}}
-            <div id="cart-items" class="flex-1 overflow-y-auto px-4 py-3">
-                <div class="cart-empty flex flex-col items-center justify-center h-full gap-2.5 text-gray-500">
-                    <div class="text-4xl opacity-30">🛒</div>
-                    <div class="text-[13px]">Cart is empty</div>
+            {{-- Cart Items ───────────────────────────────────── --}}
+            <div id="cart-items" class="flex-1 overflow-y-auto" style="padding:10px 14px;">
+                <div class="flex flex-col items-center justify-center h-full gap-3">
+                    <div style="font-size:36px;opacity:.15;animation:float 3s ease infinite;">🛒</div>
+                    <div style="font-size:12.5px;color:var(--text-3);">Cart is empty</div>
                 </div>
             </div>
 
-            {{-- Cart Footer --}}
-            <div class="border-t border-gray-800/50 dark:border-white/[0.07] p-4 flex-shrink-0 flex flex-col gap-3">
+            {{-- Cart Footer ──────────────────────────────────── --}}
+            <div class="flex-shrink-0"
+                style="border-top:1px solid var(--border);padding:14px 14px 16px;background:var(--surface);">
 
-                {{-- Total --}}
-                <div class="flex justify-between items-center">
-                    <span class="text-[13px] dark:text-gray-400 font-medium">Total</span>
-                    <span id="totalAmount" class="font-mono text-2xl font-bold dark:text-white">$0.00</span>
+                {{-- Order total --}}
+                <div class="flex justify-between items-end mb-4">
+                    <span
+                        style="font-size:11px;color:var(--text-3);font-weight:600;letter-spacing:.5px;text-transform:uppercase;">Total</span>
+                    <div id="totalAmount"
+                        style="font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;color:var(--text);line-height:1;">
+                        $0.00</div>
                 </div>
 
-                {{-- Payment tabs --}}
-                <div class="flex gap-1.5 dark:bg-white/[0.03] border dark:border-white/[0.07] rounded-[10px] p-1">
-                    <button
-                        class="payment-tab flex-1 py-2 px-1.5 rounded-[7px] border-0 bg-transparent
-                               dark:text-gray-400 text-xs font-semibold cursor-pointer text-center
-                               transition-all duration-[180ms]"
-                        id="tab-cash" onclick="setPayment('cash')">💵 Cash</button>
-                    <button
-                        class="payment-tab flex-1 py-2 px-1.5 rounded-[7px] border-0 bg-transparent
-                               dark:text-gray-400 text-xs font-semibold cursor-pointer text-center
-                               transition-all duration-[180ms]"
-                        id="tab-khqr" onclick="setPayment('khqr')">📱 KHQR</button>
-                    <button
-                        class="payment-tab flex-1 py-2 px-1.5 rounded-[7px] border-0 bg-transparent
-                               dark:text-gray-400 text-xs font-semibold cursor-pointer text-center
-                               transition-all duration-[180ms]"
-                        id="tab-aba" onclick="setPayment('aba')">🏦 ABA</button>
+                {{-- Payment method tabs --}}
+                <div class="flex gap-1 mb-3 p-[3px] rounded-[11px]"
+                    style="background:var(--glass);border:1px solid var(--border);">
+                    <button id="tab-cash" onclick="setPayment('cash')"
+                        class="payment-tab flex-1 py-[7px] px-1 rounded-[8px] border-0 text-[11.5px] font-bold cursor-pointer text-center transition-all duration-200"
+                        style="font-family:'DM Sans',sans-serif;color:var(--text-3);background:none;">💵 Cash</button>
+                    <button id="tab-khqr" onclick="setPayment('khqr')"
+                        class="payment-tab flex-1 py-[7px] px-1 rounded-[8px] border-0 text-[11.5px] font-bold cursor-pointer text-center transition-all duration-200"
+                        style="font-family:'DM Sans',sans-serif;color:var(--text-3);background:none;">📱 KHQR</button>
+                    <button id="tab-aba" onclick="setPayment('aba')"
+                        class="payment-tab flex-1 py-[7px] px-1 rounded-[8px] border-0 text-[11.5px] font-bold cursor-pointer text-center transition-all duration-200"
+                        style="font-family:'DM Sans',sans-serif;color:var(--text-3);background:none;">🏦 ABA</button>
                 </div>
 
                 {{-- Cash section --}}
-                <div id="cashSection" class="flex flex-col gap-2">
-                    <div class="text-[11px] font-bold uppercase tracking-[0.7px] dark:text-gray-500">Cash Received</div>
-                    <input type="number" id="cashInput" placeholder="0.00" step="0.01"
-                        class="w-full dark:bg-white/[0.05] border dark:border-white/[0.07] rounded-[9px]
-                           py-[10px] px-3.5 text-[15px] font-mono text-white outline-none
-                           dark:focus:border-green-500/50 dark:focus:bg-[rgba(22,163,74,0.05)] focus:shadow-[0_0_0_3px_rgba(22,163,74,0.1)]
-                           transition-all duration-200">
+                <div id="cashSection" class="flex flex-col gap-2 mb-3">
                     <div
-                        class="flex justify-between items-center dark:bg-[rgba(22,163,74,0.08)] border dark:border-[rgba(22,163,74,0.2)] rounded-lg py-2 px-3">
-                        <span class="text-xs dark:text-green-300 font-semibold">Change</span>
-                        <span id="changeAmount" class="font-mono text-[15px] font-bold dark:text-green-300">$0.00</span>
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--text-3);">
+                        Cash Received</div>
+                    <input type="number" id="cashInput" placeholder="0.00" step="0.01"
+                        style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:9px;
+                           padding:10px 13px;font-size:15px;font-family:'IBM Plex Mono',monospace;
+                           color:var(--text);outline:none;transition:all .2s;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='rgba(34,197,94,.5)';this.style.background='rgba(34,197,94,.04)';this.style.boxShadow='0 0 0 3px rgba(34,197,94,.08)'"
+                        onblur="this.style.borderColor='';this.style.background='var(--panel)';this.style.boxShadow=''">
+                    <div class="flex justify-between items-center rounded-[9px] py-2 px-3"
+                        style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);">
+                        <span style="font-size:11.5px;color:#16A34A;font-weight:700;">Change</span>
+                        <span id="changeAmount"
+                            style="font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;color:#16A34A;">$0.00</span>
                     </div>
                 </div>
 
                 {{-- Checkout button --}}
                 <button id="checkoutBtn" onclick="checkout()" disabled
-                    class="w-full py-3.5 bg-green-600 text-white border-0
-                       rounded-xl text-[15px] font-bold cursor-pointer flex items-center justify-content-center gap-2
-                       dark:shadow-[0_4px_16px_rgba(22,163,74,0.3)] justify-center
-                       hover:not(:disabled):-translate-y-0.5 hover:not(:disabled):shadow-[0_8px_24px_rgba(22,163,74,0.45)]
-                       disabled:bg-white/[0.06] disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none
-                       transition-all duration-[220ms]">
+                    style="width:100%;padding:13px;background:linear-gradient(135deg,#15803D,#22C55E);color:#fff;border:0;
+                       border-radius:12px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;
+                       cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+                       transition:all .22s;box-shadow:0 4px 16px rgba(34,197,94,.2);">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"
+                        viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
                     Checkout
                 </button>
             </div>
         </div>
     </div>
 
-    {{-- ══ KHQR MODAL ════════════════════════════════════════ --}}
-    <div class="qr-backdrop hidden fixed inset-0 bg-black/85 backdrop-blur-lg items-center justify-center z-[200] p-5"
-        id="qrBackdrop">
-        <div
-            class="modal-in bg-[#13131F] border border-white/[0.1] rounded-3xl w-full max-width-[600px] max-w-[600px]
-                overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+    {{-- ══════════════════════════════════════════════════════════
+     KHQR MODAL
+══════════════════════════════════════════════════════════ --}}
+    <div id="qrBackdrop" class="qr-backdrop hidden fixed inset-0 items-center justify-center p-5"
+        style="background:rgba(15,20,40,.75);backdrop-filter:blur(14px);z-index:200;">
+        <div class="modal-anim w-full overflow-hidden"
+            style="max-width:560px;background:var(--panel);border:1px solid var(--border-2);
+                border-radius:22px;box-shadow:0 40px 100px rgba(0,0,0,.35);">
 
-            {{-- Header --}}
-            <div
-                class="qr-modal-header relative bg-gradient-to-br from-[#001B5C] via-[#003087] to-[#1a4db3] px-7 py-[22px] text-center">
-                <div class="flex h-[3px] w-[50px] rounded-sm overflow-hidden gap-px mx-auto mb-3.5">
-                    <span class="bg-[#CC0001] flex-1"></span>
-                    <span class="bg-[#4a90d9]" style="flex:2"></span>
-                    <span class="bg-[#CC0001] flex-1"></span>
+            {{-- KHQR Header --}}
+            <div class="khqr-header relative text-center"
+                style="background:linear-gradient(135deg,#0A1645 0%,#1D4ED8 55%,#3B82F6 100%);padding:22px 28px 18px;">
+                <div class="flex h-[3px] w-12 rounded overflow-hidden gap-px mx-auto mb-3">
+                    <span class="flex-1" style="background:#CC0001;"></span>
+                    <span style="flex:2;background:#5B9BD5;"></span>
+                    <span class="flex-1" style="background:#CC0001;"></span>
                 </div>
-                <div class="font-serif text-xl font-black text-white mb-1">Scan to Pay with KHQR</div>
-                <div class="text-[13px] text-white/55">Choose either currency — all NBC Bakong banks supported</div>
+                <div
+                    style="font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:#fff;margin-bottom:3px;letter-spacing:-.2px;">
+                    Scan to Pay · KHQR Bakong
+                </div>
+                <div style="font-size:11.5px;color:rgba(255,255,255,.55);">
+                    Any currency · All NBC Bakong-registered banks
+                </div>
             </div>
 
-            {{-- Body --}}
-            <div class="p-6">
-                <div class="qr-grid grid grid-cols-2 gap-3.5 mb-5">
+            {{-- KHQR Body --}}
+            <div style="padding:18px 20px 20px;">
+                <div class="qr-grid grid grid-cols-2 gap-3 mb-4">
                     {{-- USD --}}
-                    <div
-                        class="qr-card usd rounded-2xl p-4 text-center bg-[rgba(0,48,135,0.1)] border border-[rgba(0,48,135,0.3)]">
-                        <div class="flex items-center justify-center gap-1.5 text-[13px] font-bold text-blue-300 mb-1.5">
-                            🇺🇸 US Dollar</div>
-                        <div id="usdAmount" class="font-mono text-xl font-bold text-blue-400 mb-3"></div>
-                        <div class="bg-white rounded-[10px] p-2.5 w-full"><img id="qrImageUSD" src=""
-                                alt="USD QR" class="w-full block rounded-sm"></div>
-                        <div class="text-[10px] text-gray-500 mt-2">ABA · Wing · ACLEDA · all banks</div>
+                    <div class="rounded-xl p-4 text-center"
+                        style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);">
+                        <div style="font-size:11.5px;font-weight:700;color:#2563EB;margin-bottom:4px;">🇺🇸 US Dollar</div>
+                        <div id="usdAmount"
+                            style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:700;color:#1D4ED8;margin-bottom:10px;">
+                        </div>
+                        <div style="background:#fff;border-radius:9px;padding:9px;border:1px solid rgba(0,0,0,.06);">
+                            <img id="qrImageUSD" src="" alt="USD QR"
+                                style="width:100%;display:block;border-radius:4px;">
+                        </div>
+                        <div style="font-size:9px;color:var(--text-3);margin-top:7px;">ABA · Wing · ACLEDA · all banks
+                        </div>
                     </div>
                     {{-- KHR --}}
-                    <div
-                        class="qr-card khr rounded-2xl p-4 text-center bg-[rgba(204,0,1,0.08)] border border-[rgba(204,0,1,0.25)]">
-                        <div class="flex items-center justify-center gap-1.5 text-[13px] font-bold text-red-300 mb-1.5">
-                            🇰🇭 Khmer Riel</div>
-                        <div id="khrAmount" class="font-mono text-xl font-bold text-red-400 mb-3"></div>
-                        <div class="bg-white rounded-[10px] p-2.5 w-full"><img id="qrImageKHR" src=""
-                                alt="KHR QR" class="w-full block rounded-sm"></div>
-                        <div class="text-[10px] text-gray-500 mt-2">ABA · Wing · ACLEDA · all banks</div>
-                    </div>
-                </div>
-
-                {{-- Status --}}
-                <div class="mb-4">
-                    <div id="statusWaiting"
-                        class="text-center py-3 px-3 bg-[rgba(0,48,135,0.1)] border border-[rgba(0,48,135,0.25)] rounded-xl text-[13px] text-blue-300 font-medium">
-                        <span
-                            class="pulse-dot inline-block w-[7px] h-[7px] bg-blue-300 rounded-full mr-2 align-middle"></span>Waiting
-                        for payment on either QR...
-                    </div>
-                    <div id="statusSuccess"
-                        class="hidden py-4 px-4 bg-[rgba(22,163,74,0.12)] border border-[rgba(22,163,74,0.3)] rounded-xl text-center">
-                        <div class="text-3xl mb-1.5">✅</div>
-                        <div class="text-base font-bold text-green-300 mb-1">Payment Received!</div>
-                        <div id="successCurrency" class="text-xs text-gray-400"></div>
-                        <div class="text-xs text-gray-500 mt-1">Redirecting to receipt...</div>
-                    </div>
-                    <div id="statusExpired"
-                        class="hidden py-3 px-3 bg-[rgba(204,0,1,0.1)] border border-[rgba(204,0,1,0.25)] rounded-xl text-center text-[13px] text-red-300">
-                        ❌ QR Codes Expired — click cancel and try again.
-                    </div>
-                </div>
-
-                {{-- Countdown --}}
-                <div id="countdownArea" class="mb-4">
-                    <div class="flex justify-between text-xs text-gray-400 mb-1.5">
-                        <span>Expires in</span>
-                        <span id="countdownTimer" class="font-mono font-bold text-orange-400">5:00</span>
-                    </div>
-                    <div class="h-[5px] bg-white/[0.07] rounded-full overflow-hidden">
-                        <div id="countdownBar" class="countdown-bar h-full rounded-full bg-green-500" style="width:100%">
+                    <div class="rounded-xl p-4 text-center"
+                        style="background:rgba(204,0,1,.06);border:1px solid rgba(204,0,1,.18);">
+                        <div style="font-size:11.5px;font-weight:700;color:#B91C1C;margin-bottom:4px;">🇰🇭 Khmer Riel
+                        </div>
+                        <div id="khrAmount"
+                            style="font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:700;color:#DC2626;margin-bottom:10px;">
+                        </div>
+                        <div style="background:#fff;border-radius:9px;padding:9px;border:1px solid rgba(0,0,0,.06);">
+                            <img id="qrImageKHR" src="" alt="KHR QR"
+                                style="width:100%;display:block;border-radius:4px;">
+                        </div>
+                        <div style="font-size:9px;color:var(--text-3);margin-top:7px;">ABA · Wing · ACLEDA · all banks
                         </div>
                     </div>
                 </div>
 
-                <div id="exchangeNote" class="text-center text-[11px] text-gray-500 mb-3.5"></div>
+                {{-- Status rows --}}
+                <div id="statusWaiting"
+                    style="display:block;text-align:center;padding:11px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);border-radius:10px;font-size:12.5px;color:#2563EB;font-weight:500;margin-bottom:12px;">
+                    <span class="pulse-dot inline-block w-[6px] h-[6px] rounded-full mr-2 align-middle"
+                        style="background:#3B82F6;"></span>
+                    Waiting for payment on either QR…
+                </div>
+                <div id="statusSuccess"
+                    style="display:none;padding:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.22);border-radius:10px;text-align:center;margin-bottom:12px;">
+                    <div style="font-size:26px;margin-bottom:4px;">✅</div>
+                    <div style="font-size:15px;font-weight:700;color:#15803D;margin-bottom:3px;">Payment Received!</div>
+                    <div id="successCurrency" style="font-size:11px;color:var(--text-3);"></div>
+                    <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Redirecting to receipt…</div>
+                </div>
+                <div id="statusExpired"
+                    style="display:none;padding:11px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;text-align:center;font-size:12.5px;color:#DC2626;margin-bottom:12px;">
+                    ⏰ QR Expired — cancel and try again.
+                </div>
+
+                {{-- Countdown --}}
+                <div id="countdownArea" class="mb-3">
+                    <div class="flex justify-between mb-1.5" style="font-size:11px;color:var(--text-3);">
+                        <span>Expires in</span>
+                        <span id="countdownTimer"
+                            style="font-family:'IBM Plex Mono',monospace;font-weight:700;color:var(--amber);">5:00</span>
+                    </div>
+                    <div style="height:3px;background:var(--glass-2);border-radius:999px;overflow:hidden;">
+                        <div id="countdownBar" class="countdown-bar"
+                            style="height:100%;border-radius:999px;background:var(--green);width:100%;"></div>
+                    </div>
+                </div>
+
+                <div id="exchangeNote" style="text-align:center;font-size:10.5px;color:var(--text-3);margin-bottom:12px;">
+                </div>
 
                 <button id="cancelQrBtn" onclick="closeQrPopup()"
-                    class="w-full py-[11px] bg-[rgba(204,0,1,0.12)] border border-[rgba(204,0,1,0.3)] rounded-[10px]
-                       text-red-300 text-[13px] font-semibold cursor-pointer
-                       hover:bg-[rgba(204,0,1,0.22)] transition-all duration-[180ms]">
+                    style="width:100%;padding:10px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);
+                       border-radius:9px;color:#DC2626;font-size:12.5px;font-weight:600;
+                       font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .18s;"
+                    onmouseover="this.style.background='rgba(239,68,68,.14)'"
+                    onmouseout="this.style.background='rgba(239,68,68,.07)'">
                     Cancel Transaction
                 </button>
             </div>
         </div>
     </div>
 
-    {{-- ── ABA PAYWAY MODAL ── --}}
-    <div id="abaBackdrop" style="display:none;"
-        class="fixed inset-0 bg-black/85 backdrop-blur-lg z-[300] items-center justify-center p-5">
-        <div
-            class="modal-in bg-[#1C1C2E] border border-white/[0.1] rounded-3xl w-full max-w-[360px]
-                px-7 py-8 text-center shadow-[0_24px_80px_rgba(0,0,0,0.6)]">
+    {{-- ══════════════════════════════════════════════════════════
+     ABA PAYWAY MODAL
+══════════════════════════════════════════════════════════ --}}
+    <div id="abaBackdrop"
+        style="display:none;position:fixed;inset:0;background:rgba(15,20,40,.75);backdrop-filter:blur(14px);z-index:300;align-items:center;justify-content:center;padding:20px;">
+        <div class="modal-anim text-center"
+            style="background:var(--panel);border:1px solid var(--border-2);border-radius:22px;
+                width:100%;max-width:330px;padding:28px 24px;
+                box-shadow:0 40px 100px rgba(0,0,0,.3);">
 
             <div
-                class="w-14 h-14 bg-gradient-to-br from-[#003087] to-[#1a4db3] rounded-2xl
-                    flex items-center justify-center text-[26px] mx-auto mb-4
-                    shadow-[0_8px_24px_rgba(0,48,135,0.4)]">
+                style="width:50px;height:50px;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border-radius:15px;
+                    display:flex;align-items:center;justify-content:center;font-size:23px;
+                    margin:0 auto 14px;box-shadow:0 8px 24px rgba(59,130,246,.3);">
                 🏦</div>
-            <div class="font-serif text-xl font-black text-white mb-1">ABA PayWay</div>
-            <div class="text-[13px] text-white/45 mb-5">Scan with ABA Mobile app to pay</div>
-
-            <div id="abaAmount" class="font-mono text-[22px] font-bold text-blue-400 mb-4"></div>
 
             <div
-                class="bg-white rounded-2xl p-3 mx-auto mb-5 w-[220px] h-[220px] flex items-center justify-content-center justify-center">
-                <img id="abaQrImage" src="" alt="ABA QR Code" class="w-full h-full object-contain rounded-lg">
+                style="font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--text);margin-bottom:3px;">
+                ABA PayWay</div>
+            <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;">Scan with ABA Mobile to pay</div>
+
+            <div id="abaAmount"
+                style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#1D4ED8;margin-bottom:16px;">
+            </div>
+
+            <div
+                style="background:#fff;border-radius:14px;padding:11px;margin:0 auto 16px;
+                    width:200px;height:200px;display:flex;align-items:center;justify-content:center;
+                    border:1px solid rgba(0,0,0,.08);box-shadow:0 4px 16px rgba(0,0,0,.1);">
+                <img id="abaQrImage" src="" alt="ABA QR"
+                    style="width:100%;height:100%;object-fit:contain;border-radius:4px;">
             </div>
 
             <div id="abaWaiting"
-                class="flex items-center justify-center gap-2 py-[10px] px-4
-                    bg-[rgba(0,48,135,0.15)] border border-[rgba(0,48,135,0.3)] rounded-[10px]
-                    text-[13px] text-blue-300 font-medium mb-3">
-                <span class="pulse-dot w-[7px] h-[7px] bg-blue-300 rounded-full inline-block"></span>
-                Waiting for payment...
+                style="display:flex;align-items:center;justify-content:center;gap:7px;
+                    padding:9px 14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
+                    border-radius:9px;font-size:12px;color:#2563EB;font-weight:500;margin-bottom:10px;">
+                <span class="pulse-dot inline-block rounded-full" style="width:6px;height:6px;background:#3B82F6;"></span>
+                Waiting for payment…
             </div>
 
-            {{-- ABA 3-min countdown timer --}}
-            <div id="abaTimerWrap" class="flex items-center justify-center gap-2 mb-4">
+            <div id="abaTimerWrap"
+                style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
                 <svg width="18" height="18" viewBox="0 0 18 18" style="flex-shrink:0;transform:rotate(-90deg)">
-                    <circle cx="9" cy="9" r="7" fill="none" stroke="rgba(147,197,253,0.2)"
+                    <circle cx="9" cy="9" r="7" fill="none" stroke="rgba(59,130,246,.15)"
                         stroke-width="2" />
-                    <circle id="abaTimerArc" cx="9" cy="9" r="7" fill="none" stroke="#93C5FD"
+                    <circle id="abaTimerArc" cx="9" cy="9" r="7" fill="none" stroke="#3B82F6"
                         stroke-width="2" stroke-dasharray="43.98" stroke-dashoffset="0" stroke-linecap="round" />
                 </svg>
-                <span id="abaTimerText" class="font-mono text-[13px] font-bold text-blue-300">3:00</span>
+                <span id="abaTimerText"
+                    style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:700;color:#2563EB;">3:00</span>
             </div>
 
             <div id="abaSuccess"
-                class="hidden py-4 px-4 bg-[rgba(22,163,74,0.12)] border border-[rgba(22,163,74,0.3)] rounded-xl mb-4">
-                <div class="text-[28px] mb-1.5">✅</div>
-                <div class="text-[15px] font-bold text-green-300">Payment Confirmed!</div>
-                <div class="text-xs text-gray-500 mt-1">Redirecting to receipt...</div>
+                style="display:none;padding:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:11px;margin-bottom:14px;">
+                <div style="font-size:24px;margin-bottom:5px;">✅</div>
+                <div style="font-size:14px;font-weight:700;color:#15803D;">Payment Confirmed!</div>
+                <div style="font-size:11px;color:var(--text-3);margin-top:3px;">Redirecting to receipt…</div>
             </div>
 
             <button onclick="closeAbaModal()"
-                class="w-full py-[11px] bg-[rgba(204,0,1,0.12)] border border-[rgba(204,0,1,0.3)] rounded-[10px]
-                   text-red-300 text-[13px] font-semibold cursor-pointer
-                   hover:bg-[rgba(204,0,1,0.22)] transition-all duration-[180ms]">
+                style="width:100%;padding:10px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);
+                   border-radius:9px;color:#DC2626;font-size:12.5px;font-weight:600;
+                   font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .18s;"
+                onmouseover="this.style.background='rgba(239,68,68,.14)'"
+                onmouseout="this.style.background='rgba(239,68,68,.07)'">
                 Cancel Transaction
             </button>
         </div>
@@ -555,102 +722,112 @@
 
 @push('scripts')
     <script>
-        const POS_STATE = {
+        /* ─────────────────────────────── STATE ──────────────── */
+        const POS = {
             paymentInterval: null,
             countdownInterval: null,
             abaInterval: null,
             abaTimerInterval: null,
-            totalAmount: 0,
-            paymentMethod: 'cash',
-            viewMode: localStorage.getItem('pos_view') || 'grid',
+            total: 0,
+            method: 'cash',
+            view: localStorage.getItem('pos_view') || 'grid',
         };
 
-        // ── View toggle ───────────────────────────────────────
+        /* ─────────────────────── DARK MODE AWARE COLORS ─────── */
+        function isDark() {
+            return document.documentElement.classList.contains('dark');
+        }
+
+        function getTokenColor(token) {
+            const map = {
+                'text-3': isDark() ? '#555968' : '#9CA3AF',
+                'blue': '#3B82F6',
+                'text': isDark() ? '#EEEAE2' : '#1A1A2E',
+            };
+            return map[token] || token;
+        }
+
+        /* ─────────────────────────── VIEW TOGGLE ────────────── */
         function setView(mode) {
-            POS_STATE.viewMode = mode;
+            POS.view = mode;
             localStorage.setItem('pos_view', mode);
             document.getElementById('product-grid').classList.toggle('list-view', mode === 'list');
-            document.getElementById('btn-grid').classList.toggle('active', mode === 'grid');
-            document.getElementById('btn-list').classList.toggle('active', mode === 'list');
-            // Active style via JS (Tailwind active: doesn't apply to custom class)
             ['grid', 'list'].forEach(m => {
-                const btn = document.getElementById(`btn-${m}`);
-                if (m === mode) {
-                    btn.style.background = 'rgba(0,48,135,0.4)';
-                    btn.style.color = '#93C5FD';
-                } else {
-                    btn.style.background = '';
-                    btn.style.color = '';
-                }
+                const b = document.getElementById(`btn-${m}`);
+                b.style.background = m === mode ? 'rgba(59,130,246,.18)' : 'transparent';
+                b.style.color = m === mode ? '#2563EB' : 'var(--text-3)';
             });
         }
 
-        // ── Payment tabs ──────────────────────────────────────
+        /* ─────────────────────────── PAYMENT TABS ───────────── */
         function setPayment(method) {
-            POS_STATE.paymentMethod = method;
+            POS.method = method;
             ['cash', 'khqr', 'aba'].forEach(m => {
-                const tab = document.getElementById(`tab-${m}`);
+                const t = document.getElementById(`tab-${m}`);
                 if (m === method) {
-                    tab.style.background = 'linear-gradient(135deg,#003087,#1a4db3)';
-                    tab.style.color = '#fff';
-                    tab.style.boxShadow = '0 2px 8px rgba(0,48,135,0.35)';
+                    t.style.background = 'linear-gradient(135deg,#1D4ED8,#3B82F6)';
+                    t.style.color = '#fff';
+                    t.style.boxShadow = '0 2px 10px rgba(59,130,246,.3)';
                 } else {
-                    tab.style.background = '';
-                    tab.style.color = '';
-                    tab.style.boxShadow = '';
+                    t.style.background = 'none';
+                    t.style.color = 'var(--text-3)';
+                    t.style.boxShadow = '';
                 }
             });
             document.getElementById('cashSection').style.display = method === 'cash' ? 'flex' : 'none';
         }
 
-        // ── Init ──────────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', function() {
-            setView(POS_STATE.viewMode);
+        /* ────────────────────────────── INIT ────────────────── */
+        document.addEventListener('DOMContentLoaded', () => {
+            setView(POS.view);
             setPayment('cash');
-            document.getElementById('cashInput').addEventListener('input', calculateChange);
-
-            let searchTimeout = null;
+            document.getElementById('cashInput').addEventListener('input', calcChange);
+            let st;
             document.getElementById('search').addEventListener('keyup', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
+                clearTimeout(st);
+                st = setTimeout(() => {
                     fetch(
-                            `{{ route('admin.pos.search') }}?search=${encodeURIComponent(this.value)}`
-                            )
+                            `{{ route('admin.pos.search') }}?search=${encodeURIComponent(this.value)}`)
                         .then(r => r.json()).then(renderProducts);
                 }, 280);
             });
-
             loadCart();
         });
 
-        // ── Render products ───────────────────────────────────
+        /* ──────────────────────── RENDER PRODUCTS ───────────── */
         function renderProducts(products) {
-            const grid = document.getElementById('product-grid');
+            const g = document.getElementById('product-grid');
             if (!products.length) {
-                grid.innerHTML =
-                    `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#6B7280;font-size:13px;">No products found.</div>`;
+                g.innerHTML =
+                    `<div style="grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--text-3);font-size:13px;">No products found</div>`;
                 return;
             }
-            grid.innerHTML = products.map(p => {
+            g.innerHTML = products.map(p => {
                 const img = p.image ? `/storage/${p.image}` : '/images/no-image.png';
-                const oos = p.stock <= 0;
-                return `<div class="product-card bg-white/[0.03] border border-white/[0.07] rounded-[13px] overflow-hidden cursor-pointer flex flex-col transition-all duration-[180ms]">
-                <div class="product-img-wrap w-full aspect-square overflow-hidden bg-white/[0.04] relative flex-shrink-0">
-                    <img class="product-img w-full h-full object-cover transition-transform duration-300" src="${img}" alt="${p.name}" loading="lazy">
-                    ${oos ? '<div class="absolute inset-0 bg-black/65 flex items-center justify-center text-[11px] font-bold text-red-300 tracking-wide uppercase">Out of Stock</div>' : ''}
+                const oos = p.stock <= 0,
+                    low = !oos && p.stock <= 5;
+                return `<div class="product-card">
+                <div class="product-img-wrap">
+                    <img class="product-img" src="${img}" alt="${p.name}" loading="lazy">
+                    ${oos ? `<div class="absolute inset-0 flex items-center justify-center" style="background:rgba(0,0,0,.65);backdrop-filter:blur(3px);z-index:2;"><span style="font-size:9.5px;font-weight:800;color:#FCA5A5;letter-spacing:1.2px;text-transform:uppercase;">Out of Stock</span></div>` : ''}
+                    ${low ? `<div class="absolute top-2 right-2 rounded-md px-1.5 py-0.5" style="background:rgba(245,158,11,.18);border:1px solid rgba(245,158,11,.4);font-size:8.5px;font-weight:800;color:#D97706;z-index:2;">LOW</div>` : ''}
                 </div>
-                <div class="product-info p-[9px_11px_11px] flex-1 flex flex-col gap-[3px]">
-                    <div class="product-name text-[12.5px] font-semibold text-[#E8E4DC] leading-[1.3]">${p.name}</div>
-                    <div class="product-price font-mono text-[13px] font-bold text-green-400">$${parseFloat(p.sell_price).toFixed(2)}</div>
-                    <div class="product-stock text-[10.5px] text-gray-500">Stock: ${p.stock}</div>
+                <div class="product-info flex-1 flex flex-col" style="padding:9px 10px 0;">
+                    <div class="product-name" style="font-size:12px;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:3px;">${p.name}</div>
+                    <div class="product-price font-mono" style="font-size:13px;font-weight:700;color:#16A34A;margin-bottom:2px;">$${parseFloat(p.sell_price).toFixed(2)}</div>
+                    <div style="font-size:10px;color:var(--text-3);margin-bottom:9px;">${p.stock} in stock</div>
                 </div>
-                <button class="btn-add mx-[10px] mb-[10px] py-[7px] bg-gradient-to-br from-[#003087] to-[#1a4db3] text-white border-0 rounded-lg text-xs font-semibold cursor-pointer shadow-[0_2px_8px_rgba(0,48,135,0.3)] transition-all duration-150"
-                        onclick="addToCart(${p.id})" ${oos ? 'disabled' : ''}>+ Add to Cart</button>
+                <button class="btn-add" onclick="addToCart(${p.id})" ${oos?'disabled':''}
+                    style="margin:0 9px 9px;padding:7px;border:0;border-radius:9px;font-size:11.5px;font-weight:700;
+                           font-family:'DM Sans',sans-serif;transition:all .18s;
+                           ${oos ? 'background:rgba(0,0,0,.05);color:var(--text-3);cursor:not-allowed;' : 'background:linear-gradient(135deg,#1D4ED8,#3B82F6);color:#fff;box-shadow:0 2px 12px rgba(59,130,246,.25);cursor:pointer;'}">
+                    ${oos ? 'Unavailable' : '+ Add to Cart'}
+                </button>
             </div>`;
             }).join('');
         }
 
-        // ── Cart ──────────────────────────────────────────────
+        /* ─────────────────────────────── CART ───────────────── */
         function addToCart(id) {
             fetch("{{ route('admin.pos.add') }}", {
                 method: 'POST',
@@ -727,68 +904,78 @@
             fetch("{{ url('/admin/pos-cart-data') }}").then(r => r.json()).then(data => {
                 const cartDiv = document.getElementById('cart-items');
                 const totalEl = document.getElementById('totalAmount');
-                const countEl = document.getElementById('cartCount');
-                const checkBtn = document.getElementById('checkoutBtn');
+                const subtitle = document.getElementById('cartSubtitle');
+                const btn = document.getElementById('checkoutBtn');
                 const keys = Object.keys(data);
-                let subtotal = 0,
-                    totalQty = 0;
+                let sub = 0,
+                    qty = 0;
 
                 if (!keys.length) {
-                    cartDiv.innerHTML = `<div class="cart-empty flex flex-col items-center justify-center h-full gap-2.5 text-gray-500">
-                    <div class="text-4xl opacity-30">🛒</div>
-                    <div class="text-[13px]">Cart is empty</div></div>`;
-                    countEl.textContent = '0';
+                    cartDiv.innerHTML = `<div class="flex flex-col items-center justify-center h-full gap-3">
+                    <div style="font-size:36px;opacity:.15;animation:float 3s ease infinite;">🛒</div>
+                    <div style="font-size:12.5px;color:var(--text-3);">Cart is empty</div></div>`;
+                    subtitle.textContent = '0 items';
                     totalEl.textContent = '$0.00';
-                    POS_STATE.totalAmount = 0;
-                    checkBtn.disabled = true;
-                    calculateChange();
+                    POS.total = 0;
+                    btn.disabled = true;
+                    btn.style.background = 'rgba(0,0,0,.05)';
+                    btn.style.color = 'var(--text-3)';
+                    btn.style.boxShadow = 'none';
+                    calcChange();
                     return;
                 }
 
                 cartDiv.innerHTML = keys.map(id => {
                     const item = data[id];
                     const lt = item.price * item.quantity;
-                    subtotal += lt;
-                    totalQty += item.quantity;
-                    return `<div class="cart-item flex items-center gap-2.5 py-2.5 border-b dark:border-white/[0.04] last:border-b-0">
-                                <div class="flex-1 min-w-0">
-                                    <div class="text-[13px] font-semibold dark:text-[#E8E4DC] truncate">${item.name}</div>
-                                    <div class="font-mono text-[11px] dark:text-gray-400 mt-px">$${parseFloat(item.price).toFixed(2)} each</div>
-                                </div>
-                                <div class="flex items-center dark:bg-white/[0.04] border dark:border-white/[0.07] rounded-lg overflow-hidden">
-                                    <button class="w-[26px] h-[26px] bg-transparent border-0 dark:text-gray-400 cursor-pointer text-sm font-bold flex items-center justify-center dark:hover:bg-white/[0.08] dark:hover:text-white transition-all duration-100"
-                                            onclick="updateQty(${id}, ${item.quantity - 1})">-</button>
-                                    <span class="w-7 text-center text-[13px] font-bold dark:text-white font-mono border-x dark:border-white/[0.07] leading-[26px]">${item.quantity}</span>
-                                    <button class="w-[26px] h-[26px] bg-transparent border-0 dark:text-gray-400 cursor-pointer text-sm font-bold flex items-center justify-center dark:hover:bg-white/[0.08] dark:hover:text-white transition-all duration-100"
-                                            onclick="updateQty(${id}, ${item.quantity + 1})">+</button>
-                                </div>
-                                <span class="font-mono text-[13px] font-bold dark:text-white min-w-[52px] text-right">$${lt.toFixed(2)}</span>
-                                <button class="bg-transparent border-0 text-red-600/40 dark:text-red-400/40 cursor-pointer text-base px-1 hover:text-red-500 dark:hover:text-red-300 transition-colors duration-100"
-                                        onclick="removeItem(${id})">x</button>
-                            </div>`;
+                    sub += lt;
+                    qty += item.quantity;
+                    return `<div class="cart-item cart-item-sep flex items-center gap-2 py-[9px] last:border-b-0">
+                    <div class="flex-1 min-w-0">
+                        <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
+                        <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-3);margin-top:1px;">$${parseFloat(item.price).toFixed(2)} each</div>
+                    </div>
+                    <div class="flex items-center overflow-hidden rounded-lg" style="background:var(--glass);border:1px solid var(--border);">
+                        <button onclick="updateQty(${id},${item.quantity-1})"
+                            style="width:25px;height:25px;background:none;border:0;color:var(--text-3);cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .1s;"
+                            onmouseover="this.style.background='rgba(0,0,0,.05)';this.style.color='var(--text)'"
+                            onmouseout="this.style.background='none';this.style.color='var(--text-3)'">−</button>
+                        <span style="width:26px;text-align:center;font-size:12px;font-weight:700;color:var(--text);font-family:'IBM Plex Mono',monospace;border-left:1px solid var(--border);border-right:1px solid var(--border);line-height:25px;">${item.quantity}</span>
+                        <button onclick="updateQty(${id},${item.quantity+1})"
+                            style="width:25px;height:25px;background:none;border:0;color:var(--text-3);cursor:pointer;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;transition:all .1s;"
+                            onmouseover="this.style.background='rgba(0,0,0,.05)';this.style.color='var(--text)'"
+                            onmouseout="this.style.background='none';this.style.color='var(--text-3)'">+</button>
+                    </div>
+                    <span style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:700;color:var(--text);min-width:46px;text-align:right;">$${lt.toFixed(2)}</span>
+                    <button onclick="removeItem(${id})"
+                        style="background:none;border:0;color:rgba(239,68,68,.35);cursor:pointer;font-size:15px;padding:2px 3px;transition:color .1s;line-height:1;"
+                        onmouseover="this.style.color='#EF4444'"
+                        onmouseout="this.style.color='rgba(239,68,68,.35)'">×</button>
+                </div>`;
                 }).join('');
 
-                POS_STATE.totalAmount = subtotal;
-                totalEl.textContent = '$' + subtotal.toFixed(2);
-                countEl.textContent = totalQty;
-                checkBtn.disabled = false;
-                calculateChange();
+                POS.total = sub;
+                totalEl.textContent = '$' + sub.toFixed(2);
+                subtitle.textContent = `${qty} item${qty!==1?'s':''}`;
+                btn.disabled = false;
+                btn.style.background = 'linear-gradient(135deg,#15803D,#22C55E)';
+                btn.style.color = '#fff';
+                btn.style.boxShadow = '0 4px 16px rgba(34,197,94,.2)';
+                calcChange();
             });
         }
 
-        function calculateChange() {
-            const cash = parseFloat(document.getElementById('cashInput').value) || 0;
-            document.getElementById('changeAmount').textContent =
-                '$' + Math.max(0, cash - POS_STATE.totalAmount).toFixed(2);
+        function calcChange() {
+            const c = parseFloat(document.getElementById('cashInput').value) || 0;
+            document.getElementById('changeAmount').textContent = '$' + Math.max(0, c - POS.total).toFixed(2);
         }
 
-        // ── Checkout ──────────────────────────────────────────
+        /* ───────────────────────────── CHECKOUT ─────────────── */
         function checkout() {
-            const method = POS_STATE.paymentMethod;
-
-            if (method === 'cash') {
+            const m = POS.method;
+            if (m === 'cash') {
                 const cash = parseFloat(document.getElementById('cashInput').value) || 0;
-                if (cash < POS_STATE.totalAmount) {
+                if (cash < POS.total) {
                     showToast('Insufficient cash amount!', 'error');
                     return;
                 }
@@ -811,16 +998,20 @@
                 });
                 return;
             }
-
-            if (POS_STATE.totalAmount <= 0) {
+            if (POS.total <= 0) {
                 showToast('Cart is empty!', 'error');
                 return;
             }
             const btn = document.getElementById('checkoutBtn');
+            const resetBtn = () => {
+                btn.disabled = false;
+                btn.innerHTML =
+                    '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Checkout';
+            };
 
-            if (method === 'khqr') {
+            if (m === 'khqr') {
                 btn.disabled = true;
-                btn.innerHTML = '⏳ Generating QR...';
+                btn.innerHTML = '⏳ Generating…';
                 fetch("{{ route('admin.pos.generateKhqr') }}", {
                         method: 'POST',
                         headers: {
@@ -828,12 +1019,12 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify({
-                            amount: POS_STATE.totalAmount
+                            amount: POS.total
                         })
                     })
-                    .then(async res => {
-                        const d = await res.json();
-                        if (!res.ok || d.error) throw new Error(d.error || 'QR generation failed');
+                    .then(async r => {
+                        const d = await r.json();
+                        if (!r.ok || d.error) throw new Error(d.error || 'Failed');
                         return d;
                     })
                     .then(d => {
@@ -841,17 +1032,13 @@
                         startCountdown(d.expires_at);
                         pollBothPayments(d.usd.md5, d.khr.md5, d.expires_at);
                     })
-                    .catch(err => showToast('Could not generate QR: ' + err.message, 'error'))
-                    .finally(() => {
-                        btn.disabled = false;
-                        btn.innerHTML = '✓ Checkout';
-                    });
+                    .catch(e => showToast('QR error: ' + e.message, 'error'))
+                    .finally(resetBtn);
                 return;
             }
-
-            if (method === 'aba') {
+            if (m === 'aba') {
                 btn.disabled = true;
-                btn.innerHTML = '⏳ Generating ABA QR...';
+                btn.innerHTML = '⏳ Generating…';
                 fetch("{{ route('admin.pos.payway.generate') }}", {
                         method: 'POST',
                         headers: {
@@ -859,44 +1046,40 @@
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
                         body: JSON.stringify({
-                            amount: POS_STATE.totalAmount
+                            amount: POS.total
                         })
                     })
                     .then(r => r.json())
-                    .then(data => {
-                        if (data.error) {
-                            showToast(data.error, 'error');
+                    .then(d => {
+                        if (d.error) {
+                            showToast(d.error, 'error');
                             return;
                         }
-                        showAbaModal(data);
-                        pollAbaPayment(data.tran_id);
+                        showAbaModal(d);
+                        pollAbaPayment(d.tran_id);
                     })
-                    .catch(err => showToast('ABA PayWay error: ' + err.message, 'error'))
-                    .finally(() => {
-                        btn.disabled = false;
-                        btn.innerHTML = '✓ Checkout';
-                    });
-                return;
+                    .catch(e => showToast('ABA error: ' + e.message, 'error'))
+                    .finally(resetBtn);
             }
         }
 
-        // ── KHQR polling & countdown ──────────────────────────
-        function pollBothPayments(md5USD, md5KHR, expiresAt) {
-            if (POS_STATE.paymentInterval) clearInterval(POS_STATE.paymentInterval);
+        /* ──────────────────────── KHQR POLLING ──────────────── */
+        function pollBothPayments(usd, khr, exp) {
+            if (POS.paymentInterval) clearInterval(POS.paymentInterval);
             let paid = false;
-            POS_STATE.paymentInterval = setInterval(() => {
+            POS.paymentInterval = setInterval(() => {
                 if (paid) return;
-                if (Math.floor(Date.now() / 1000) >= expiresAt) {
-                    clearInterval(POS_STATE.paymentInterval);
-                    clearInterval(POS_STATE.countdownInterval);
+                if (Math.floor(Date.now() / 1000) >= exp) {
+                    clearInterval(POS.paymentInterval);
+                    clearInterval(POS.countdownInterval);
                     showExpiredState();
                     return;
                 }
-                pollSingle(md5USD, 'usd', () => {
+                pollSingle(usd, 'usd', () => {
                     paid = true;
                 });
                 setTimeout(() => {
-                    if (!paid) pollSingle(md5KHR, 'khr', () => {
+                    if (!paid) pollSingle(khr, 'khr', () => {
                         paid = true;
                     });
                 }, 500);
@@ -917,8 +1100,8 @@
             }).then(r => r.json()).then(d => {
                 if (d.success) {
                     onSuccess();
-                    clearInterval(POS_STATE.paymentInterval);
-                    clearInterval(POS_STATE.countdownInterval);
+                    clearInterval(POS.paymentInterval);
+                    clearInterval(POS.countdownInterval);
                     showSuccessState(d.currency);
                     setTimeout(() => {
                         window.location.href = d.receipt_url || `/admin/pos/receipt/${d.sale_id}`;
@@ -927,112 +1110,104 @@
             }).catch(() => {});
         }
 
-        function startCountdown(expiresAt) {
-            if (POS_STATE.countdownInterval) clearInterval(POS_STATE.countdownInterval);
-            const total = expiresAt - Math.floor(Date.now() / 1000);
+        function startCountdown(exp) {
+            if (POS.countdownInterval) clearInterval(POS.countdownInterval);
+            const total = exp - Math.floor(Date.now() / 1000);
             const bar = document.getElementById('countdownBar');
             const timer = document.getElementById('countdownTimer');
-            POS_STATE.countdownInterval = setInterval(() => {
-                const rem = expiresAt - Math.floor(Date.now() / 1000);
+            POS.countdownInterval = setInterval(() => {
+                const rem = exp - Math.floor(Date.now() / 1000);
                 if (rem <= 0) {
-                    clearInterval(POS_STATE.countdownInterval);
+                    clearInterval(POS.countdownInterval);
                     timer.textContent = '0:00';
                     bar.style.width = '0%';
-                    bar.style.background = '#ef4444';
+                    bar.style.background = 'var(--red)';
                     return;
                 }
                 timer.textContent = `${Math.floor(rem/60)}:${(rem%60).toString().padStart(2,'0')}`;
                 const pct = (rem / total) * 100;
                 bar.style.width = pct + '%';
-                bar.style.background = pct > 50 ? '#22C55E' : pct > 25 ? '#F97316' : '#ef4444';
-                if (rem <= 30) timer.style.color = '#ef4444';
+                bar.style.background = pct > 50 ? 'var(--green)' : pct > 25 ? 'var(--amber)' : 'var(--red)';
+                if (rem <= 30) timer.style.color = 'var(--red)';
             }, 1000);
         }
 
-        // ── KHQR modal helpers ────────────────────────────────
+        /* ──────────────────────── KHQR MODAL ────────────────── */
         function showQrModal(data) {
             document.getElementById('qrImageUSD').src = data.usd.qr_image;
             document.getElementById('qrImageKHR').src = data.khr.qr_image;
             document.getElementById('usdAmount').textContent = data.usd.label;
             document.getElementById('khrAmount').textContent = data.khr.label;
             document.getElementById('exchangeNote').textContent =
-                `Exchange rate: $1 = ${Math.round(data.khr.amount / data.usd.amount).toLocaleString()} ៛`;
+                `Exchange rate: $1 = ${Math.round(data.khr.amount/data.usd.amount).toLocaleString()} ៛`;
             document.getElementById('statusWaiting').style.display = 'block';
             document.getElementById('statusSuccess').style.display = 'none';
             document.getElementById('statusExpired').style.display = 'none';
             document.getElementById('countdownArea').style.display = 'block';
             document.getElementById('cancelQrBtn').style.display = 'block';
-            document.getElementById('countdownTimer').style.color = '#F97316';
+            document.getElementById('countdownTimer').style.color = 'var(--amber)';
             document.getElementById('countdownBar').style.width = '100%';
-            document.getElementById('countdownBar').style.background = '#22C55E';
+            document.getElementById('countdownBar').style.background = 'var(--green)';
             const bd = document.getElementById('qrBackdrop');
             bd.classList.remove('hidden');
             bd.classList.add('flex');
         }
 
         function showSuccessState(currency) {
-            document.getElementById('statusWaiting').style.display = 'none';
-            document.getElementById('statusExpired').style.display = 'none';
+            ['statusWaiting', 'statusExpired', 'countdownArea', 'cancelQrBtn'].forEach(id => document.getElementById(id)
+                .style.display = 'none');
             document.getElementById('statusSuccess').style.display = 'block';
-            document.getElementById('countdownArea').style.display = 'none';
-            document.getElementById('cancelQrBtn').style.display = 'none';
             document.getElementById('successCurrency').textContent =
-                `Paid with ${currency === 'KHR' ? '🇰🇭 Khmer Riel (KHR)' : '🇺🇸 US Dollar (USD)'}`;
+                `Paid with ${currency==='KHR'?'🇰🇭 Khmer Riel':'🇺🇸 US Dollar'}`;
         }
 
         function showExpiredState() {
-            document.getElementById('statusWaiting').style.display = 'none';
-            document.getElementById('statusSuccess').style.display = 'none';
+            ['statusWaiting', 'statusSuccess', 'countdownArea'].forEach(id => document.getElementById(id).style.display =
+                'none');
             document.getElementById('statusExpired').style.display = 'block';
-            document.getElementById('countdownArea').style.display = 'none';
-            document.getElementById('qrImageUSD').src = '';
-            document.getElementById('qrImageKHR').src = '';
+            document.getElementById('qrImageUSD').src = document.getElementById('qrImageKHR').src = '';
         }
 
         function closeQrPopup() {
-            if (POS_STATE.paymentInterval) clearInterval(POS_STATE.paymentInterval);
-            if (POS_STATE.countdownInterval) clearInterval(POS_STATE.countdownInterval);
+            if (POS.paymentInterval) clearInterval(POS.paymentInterval);
+            if (POS.countdownInterval) clearInterval(POS.countdownInterval);
             const bd = document.getElementById('qrBackdrop');
             bd.classList.add('hidden');
             bd.classList.remove('flex');
-            document.getElementById('qrImageUSD').src = '';
-            document.getElementById('qrImageKHR').src = '';
+            document.getElementById('qrImageUSD').src = document.getElementById('qrImageKHR').src = '';
         }
 
-        // ── ABA modal helpers ─────────────────────────────────
+        /* ───────────────────────── ABA MODAL ────────────────── */
         function showAbaModal(data) {
-            const qrSrc = data.qr_image ||
+            document.getElementById('abaQrImage').src = data.qr_image ||
                 `https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=${encodeURIComponent(data.qr_string)}`;
-            document.getElementById('abaQrImage').src = qrSrc;
-            document.getElementById('abaAmount').textContent = '$' + parseFloat(POS_STATE.totalAmount).toFixed(2);
+            document.getElementById('abaAmount').textContent = '$' + parseFloat(POS.total).toFixed(2);
             document.getElementById('abaWaiting').style.display = 'flex';
             document.getElementById('abaSuccess').style.display = 'none';
             document.getElementById('abaTimerWrap').style.display = 'flex';
             document.getElementById('abaBackdrop').style.display = 'flex';
-            startAbaTimer(3 * 60);
+            startAbaTimer(180);
         }
 
         function startAbaTimer(totalSecs) {
-            if (POS_STATE.abaTimerInterval) clearInterval(POS_STATE.abaTimerInterval);
-            const circ = 43.98;
+            if (POS.abaTimerInterval) clearInterval(POS.abaTimerInterval);
             let rem = totalSecs;
             const arc = document.getElementById('abaTimerArc');
             arc.style.transition = 'none';
             arc.style.strokeDashoffset = '0';
-
-            POS_STATE.abaTimerInterval = setInterval(() => {
+            POS.abaTimerInterval = setInterval(() => {
                 rem--;
                 const pct = rem / totalSecs;
                 const mins = Math.floor(rem / 60);
                 const secs = (rem % 60).toString().padStart(2, '0');
                 document.getElementById('abaTimerText').textContent = `${mins}:${secs}`;
-                arc.style.transition = 'stroke-dashoffset 1s linear, stroke 0.5s';
-                arc.style.strokeDashoffset = String(circ * (1 - pct));
-                arc.style.stroke = pct > 0.5 ? '#93C5FD' : pct > 0.25 ? '#F97316' : '#ef4444';
-                document.getElementById('abaTimerText').style.color = pct > 0.25 ? '#93C5FD' : '#ef4444';
+                arc.style.transition = 'stroke-dashoffset 1s linear, stroke .5s';
+                arc.style.strokeDashoffset = String(43.98 * (1 - pct));
+                arc.style.stroke = pct > .5 ? '#3B82F6' : pct > .25 ? 'var(--amber)' : 'var(--red)';
+                document.getElementById('abaTimerText').style.color = pct > .25 ? '#2563EB' : 'var(--red)';
                 if (rem <= 0) {
-                    clearInterval(POS_STATE.abaTimerInterval);
-                    clearInterval(POS_STATE.abaInterval);
+                    clearInterval(POS.abaTimerInterval);
+                    clearInterval(POS.abaInterval);
                     showToast('ABA QR expired — please try again', 'error');
                     closeAbaModal();
                 }
@@ -1040,47 +1215,55 @@
         }
 
         function closeAbaModal() {
-            if (POS_STATE.abaInterval) clearInterval(POS_STATE.abaInterval);
-            if (POS_STATE.abaTimerInterval) clearInterval(POS_STATE.abaTimerInterval);
+            if (POS.abaInterval) clearInterval(POS.abaInterval);
+            if (POS.abaTimerInterval) clearInterval(POS.abaTimerInterval);
             document.getElementById('abaBackdrop').style.display = 'none';
             document.getElementById('abaQrImage').src = '';
         }
 
-        // ── ABA polling ───────────────────────────────────────
+        /* ───────────────────────── ABA POLLING ──────────────── */
         function pollAbaPayment(tranId) {
-            if (POS_STATE.abaInterval) clearInterval(POS_STATE.abaInterval);
-            POS_STATE.abaInterval = setInterval(async () => {
+            if (POS.abaInterval) clearInterval(POS.abaInterval);
+            POS.abaInterval = setInterval(async () => {
                 try {
-                    const res = await fetch("{{ route('admin.pos.payway.verify') }}", {
+                    const r = await fetch("{{ route('admin.pos.payway.verify') }}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         }
                     });
-                    const data = await res.json();
-                    if (data.success) {
-                        clearInterval(POS_STATE.abaInterval);
-                        clearInterval(POS_STATE.abaTimerInterval);
+                    const d = await r.json();
+                    if (d.success) {
+                        clearInterval(POS.abaInterval);
+                        clearInterval(POS.abaTimerInterval);
                         document.getElementById('abaTimerWrap').style.display = 'none';
                         document.getElementById('abaWaiting').style.display = 'none';
                         document.getElementById('abaSuccess').style.display = 'block';
                         setTimeout(() => {
-                            window.location.href = data.receipt_url;
+                            window.location.href = d.receipt_url;
                         }, 1500);
                     }
                 } catch (e) {}
             }, 5000);
         }
 
-        // ── Toast ─────────────────────────────────────────────
+        /* ─────────────────────────── TOAST ──────────────────── */
         function showToast(msg, type = 'info') {
             const t = document.createElement('div');
-            t.style.cssText =
-                `position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;background:${type==='error'?'rgba(204,0,1,0.9)':'rgba(22,163,74,0.9)'};color:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.4);`;
+            t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;padding:11px 18px;
+            border-radius:10px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;
+            background:${type==='error'?'rgba(220,38,38,.95)':'rgba(34,197,94,.95)'};
+            color:#fff;box-shadow:0 4px 24px rgba(0,0,0,.25);backdrop-filter:blur(10px);
+            animation:itemIn .2s ease;`;
             t.textContent = msg;
             document.body.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
+            setTimeout(() => {
+                t.style.opacity = '0';
+                t.style.transform = 'translateY(4px)';
+                t.style.transition = 'all .2s';
+                setTimeout(() => t.remove(), 200);
+            }, 2800);
         }
     </script>
 @endpush
