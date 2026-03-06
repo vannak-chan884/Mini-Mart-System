@@ -382,11 +382,11 @@
                 <div class="flex items-center gap-2.5">
 
                     {{-- Cambodian flag stripe --}}
-                    <div class="flex flex-col h-4 w-[3px] rounded-sm overflow-hidden gap-px flex-shrink-0">
+                    {{-- <div class="flex flex-col h-4 w-[3px] rounded-sm overflow-hidden gap-px flex-shrink-0">
                         <span class="bg-[#CC0001] flex-1"></span>
                         <span class="bg-[#4a90d9]" style="flex:2"></span>
                         <span class="bg-[#CC0001] flex-1"></span>
-                    </div>
+                    </div> --}}
 
                     {{-- Clock --}}
                     <div

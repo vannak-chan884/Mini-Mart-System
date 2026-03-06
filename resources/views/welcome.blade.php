@@ -729,9 +729,9 @@
                         Open POS →
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-ghost">Sign In</a>
+                    <a href="{{ route('login') }}" class="btn btn-ghost">Log In</a>
                     @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="btn btn-primary">Get Started</a>
+                        <a href="{{ route('register') }}" class="btn btn-primary">Register</a>
                     @endif
                 @endauth
             </div>

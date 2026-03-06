@@ -164,7 +164,7 @@
                                                  bg-blue-900/20 dark:bg-blue-100
                                                  border border-blue-700/25 dark:border-blue-300/50
                                                  px-2 py-0.5 rounded">
-                                        #{{ $sale->invoice_number ?? str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}
+                                        #{{ $sale->invoice_no ?? str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}
                                     </span>
                                 </td>
                                 <td class="px-5 py-3 text-[12.5px] text-gray-500 dark:text-gray-400">
@@ -183,14 +183,14 @@
                                                      bg-blue-100 dark:bg-blue-900/20
                                                      border border-blue-300/50 dark:border-blue-700/30
                                                      text-blue-700 dark:text-blue-400">
-                                            🇺🇸 KHQR USD
+                                            $ KHQR USD
                                         </span>
                                     @else
                                         <span class="text-[11px] font-bold px-2 py-0.5 rounded-md
                                                      bg-red-100 dark:bg-red-900/20
                                                      border border-red-300/50 dark:border-red-700/30
                                                      text-red-700 dark:text-red-400">
-                                            🇰🇭 KHQR KHR
+                                            ៛ KHQR KHR
                                         </span>
                                     @endif
                                 </td>
