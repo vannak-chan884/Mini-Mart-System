@@ -16,18 +16,13 @@
 
     /* Page header */
     .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         margin-bottom: 24px;
-        flex-wrap: wrap;
         gap: 12px;
     }
     .page-heading {
         font-family: 'Playfair Display', serif;
         font-size: 22px;
         font-weight: 700;
-        color: #fff;
     }
     .page-heading span {
         font-family: 'IBM Plex Mono', monospace;
@@ -39,12 +34,9 @@
 
     /* Add button */
     .btn-add {
-        display: inline-flex;
-        align-items: center;
         gap: 7px;
         padding: 10px 18px;
         background: linear-gradient(135deg, var(--blue), var(--blue-mid));
-        color: #fff;
         border-radius: 10px;
         font-size: 13px;
         font-weight: 600;
@@ -214,12 +206,12 @@
 @section('content')
 
 {{-- Header --}}
-<div class="page-header">
-    <div class="page-heading">
+<div class="page-header flex text-center justify-between flex-wrap">
+    <div class="page-heading text-white">
         🗂️ Categories
         <span>{{ $categories->count() }} total</span>
     </div>
-    <a href="{{ route('admin.categories.create') }}" class="btn-add">
+    <a href="{{ route('admin.categories.create') }}" class="btn-add inline-flex items-center text-white dark:text-white">
         + Add Category
     </a>
 </div>
@@ -277,7 +269,7 @@
         <div class="empty-icon">🗂️</div>
         <div class="empty-title">No categories yet</div>
         <div class="empty-sub">Create your first category to start organizing products.</div>
-        <a href="{{ route('admin.categories.create') }}" class="btn-add">+ Add First Category</a>
+        <a href="{{ route('admin.categories.create') }}" class="btn-add inline-flex items-center text-white">+ Add First Category</a>
     </div>
     @endif
 </div>

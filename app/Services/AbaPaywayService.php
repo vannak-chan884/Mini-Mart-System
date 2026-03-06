@@ -26,50 +26,64 @@ class AbaPaywayService
         $tranId          = $invoiceNumber;
         $reqTime         = Carbon::now('UTC')->format('YmdHis');
         $currency        = 'USD';
-        $amountStr       = number_format($amount, 2, '.', '');
+        $amountStr       = number_format($amount, 2, '.', ''); // e.g. "1.00"
         $paymentOption   = 'abapay_khqr';
         $lifetime        = 30;
-        $qrImageTemplate = 'template1';
+        $qrImageTemplate = 'template2_color';
 
-        // Hash field order per ABA docs:
-        // req_time, merchant_id, tran_id, amount, items, first_name, last_name,
-        // email, phone, purchase_type, payment_option, callback_url, return_deeplink,
-        // currency, custom_fields, return_params, payout, lifetime, qr_image_template
-        $hashStr = $reqTime
-                 . $this->merchantId
-                 . $tranId
-                 . $amountStr
-                 . ''   // items
-                 . ''   // first_name
-                 . ''   // last_name
-                 . ''   // email
-                 . ''   // phone
-                 . ''   // purchase_type
-                 . $paymentOption
-                 . ''   // callback_url
-                 . ''   // return_deeplink
-                 . $currency
-                 . ''   // custom_fields
-                 . ''   // return_params
-                 . ''   // payout
-                 . $lifetime
-                 . $qrImageTemplate;
+        // ── Hash field order per ABA docs ─────────────────────────────────
+        // IMPORTANT: every field must be a string, empty fields = empty string
+        // Fields: req_time · merchant_id · tran_id · amount · items ·
+        //         first_name · last_name · email · phone · purchase_type ·
+        //         payment_option · callback_url · return_deeplink · currency ·
+        //         custom_fields · return_params · payout · lifetime · qr_image_template
+        $hashStr = $reqTime               // YmdHis string
+                 . $this->merchantId      // merchant id string
+                 . $tranId                // tran_id string
+                 . $amountStr             // "1.00" string — must match payload amount exactly
+                 . ''                     // items
+                 . ''                     // first_name
+                 . ''                     // last_name
+                 . ''                     // email
+                 . ''                     // phone
+                 . ''                     // purchase_type
+                 . $paymentOption         // "abapay_khqr"
+                 . ''                     // callback_url
+                 . ''                     // return_deeplink
+                 . $currency              // "USD"
+                 . ''                     // custom_fields
+                 . ''                     // return_params
+                 . ''                     // payout
+                 . (string) $lifetime     // "30" — must be string in hash
+                 . $qrImageTemplate;      // "template1"
 
         $hash = $this->hmac($hashStr);
 
+        // ── Payload — amount sent as STRING to match hash exactly ─────────
+        // ABA docs show amount as number in JSON but hash uses string "1.00"
+        // Sending as string is safer and matches hash computation
         $payload = [
             'req_time'          => $reqTime,
             'merchant_id'       => $this->merchantId,
             'tran_id'           => $tranId,
-            'amount'            => $amountStr,
+            'amount'            => $amountStr,   // ✅ string — matches hash exactly
             'currency'          => $currency,
             'payment_option'    => $paymentOption,
-            'lifetime'          => $lifetime,
+            'lifetime'          => $lifetime,    // int in payload is fine
             'qr_image_template' => $qrImageTemplate,
             'hash'              => $hash,
         ];
 
         $response = $this->postJson($this->apiUrl, $payload);
+
+        // Log response for debugging — remove after confirmed working
+        Log::info('ABA PayWay generate response', [
+            'status'    => $response['status'] ?? null,
+            'tran_id'   => $tranId,
+            'merchant'  => $this->merchantId,
+            'amount'    => $amountStr,
+            'hash_input'=> substr($hashStr, 0, 60) . '...', // partial — don't log full key
+        ]);
 
         return [
             'status'    => $response['status']['code'] ?? 'error',
