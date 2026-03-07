@@ -124,7 +124,34 @@
             </div>
             <div class="text-[12px] text-gray-500 dark:text-gray-600">Items to restock</div>
         </div>
+        
+        {{-- Expensed Today --}}
+        <div class="stat-card teal
+                    bg-black/[0.03] dark:bg-white/[0.03]
+                    border border-black/[0.08] dark:border-white/[0.07]
+                    rounded-2xl p-5">
+            <div class="flex items-start justify-between mb-3">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Today's Expense</div>
+                <span class="text-xl">💸</span>
+            </div>
+            <div class="font-mono text-2xl font-bold text-[#0D0D14] dark:text-white mb-1">
+                ${{ number_format($todayExpenses,2) }}
+            </div>
+        </div>
 
+        {{-- Profit Today --}}
+        <div class="stat-card teal
+                    bg-black/[0.03] dark:bg-white/[0.03]
+                    border border-black/[0.08] dark:border-white/[0.07]
+                    rounded-2xl p-5">
+            <div class="flex items-start justify-between mb-3">
+                <div class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Today's Profit</div>
+                <span class="text-xl">💲</span>
+            </div>
+            <div class="font-mono text-2xl font-bold text-[#0D0D14] dark:text-white mb-1">
+                ${{ number_format($profitToday,2) }}
+            </div>
+        </div>
     </div>
 
     {{-- ── Middle row: Recent Sales + Top Products ─── --}}

@@ -658,7 +658,7 @@
                 box-shadow:0 40px 100px rgba(0,0,0,.3);">
 
             <div
-                style="width:50px;height:50px;background:linear-gradient(135deg,#1D4ED8,#3B82F6);border-radius:15px;
+                style="width:50px;height:50px;background:linear-gradient(135deg,#E1232E,#3B82F6);border-radius:15px;
                     display:flex;align-items:center;justify-content:center;font-size:23px;
                     margin:0 auto 14px;box-shadow:0 8px 24px rgba(59,130,246,.3);">
                 🏦</div>
@@ -669,7 +669,7 @@
             <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;">Scan with ABA Mobile to pay</div>
 
             <div id="abaAmount"
-                style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#1D4ED8;margin-bottom:16px;">
+                style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#E1232E;margin-bottom:16px;">
             </div>
 
             <div

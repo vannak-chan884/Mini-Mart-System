@@ -6,9 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — {{ config('app.name', 'Mini Mart') }}</title>
+    {{-- <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@300;400;600&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        rel="stylesheet"> --}}
+    {{-- Fonts Family --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@300;400;600&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
         rel="stylesheet">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body {
@@ -267,6 +273,30 @@
 
                 <div
                     class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
+                    Expenses
+                </div>
+
+                <a href="{{ route('admin.expenses.index') }}"
+                    class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
+                               text-[13.5px] font-medium transition-all duration-[180ms] relative
+                               {{ request()->routeIs('admin.expenses.index')
+                                   ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                                   : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                    <span class="text-base w-5 text-center flex-shrink-0">💸</span>
+                    Expenses
+                </a>
+                <a href="{{ route('admin.expense-categories.index') }}"
+                    class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
+                               text-[13.5px] font-medium transition-all duration-[180ms] relative
+                               {{ request()->routeIs('admin.expense-categories.*')
+                                   ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                                   : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                    <span class="text-base w-5 text-center flex-shrink-0">🗃️</span>
+                    Expense Categories
+                </a>
+
+                <div
+                    class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
                     Reports
                 </div>
 
@@ -279,6 +309,16 @@
                                    : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
                         <span class="text-base w-5 text-center flex-shrink-0">🧾</span>
                         Sales History
+                    </a>
+
+                    <a href="{{ route('admin.expenses.monthlyReport') }}"
+                        class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
+                               text-[13.5px] font-medium transition-all duration-[180ms] relative
+                               {{ request()->routeIs('admin.expenses.monthlyReport')
+                                   ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                                   : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                        <span class="text-base w-5 text-center flex-shrink-0">📅</span>
+                        Expense History
                     </a>
                 @endif
 

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\ExpenseController;
+use App\Http\Controllers\Admin\ExpenseCategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ProductController;
@@ -48,6 +50,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('pos/verify-khqr', [PosController::class, 'verifyKhqr'])->name('pos.verifyKhqr');
 
     Route::resource('sales', SaleController::class)->only(['index', 'show', 'destroy']);
+
+    // Expense Routes
+    Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'store', 'edit', 'update', 'show', 'destroy']);
+    Route::resource('expense-categories', ExpenseCategoryController::class)->only(['index', 'create', 'store', 'edit', 'update', 'show', 'destroy']);
+
+    Route::get('expenses/report/monthly', [ExpenseController::class, 'monthlyReport'])->name('expenses.monthlyReport');
 });
 
 Route::middleware('auth')->group(function () {

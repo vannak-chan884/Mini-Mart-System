@@ -8,6 +8,7 @@ use App\Models\SaleItem;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Expense;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -20,6 +21,9 @@ class DashboardController extends Controller
         // ── Today stats ──────────────────────────────
         $todaySales = Sale::whereDate('created_at', $today)->count();
         $todayRevenue = Sale::whereDate('created_at', $today)->sum('total_amount');
+        $todayExpenses = Expense::whereDate('created_at', $today)->sum('amount');
+
+        $profitToday = $todayRevenue - $todayExpenses;
 
         // ── All-time stats ───────────────────────────
         $totalSales = Sale::count();
@@ -64,6 +68,8 @@ class DashboardController extends Controller
             'recentSales',
             'topProducts',
             'paymentBreakdown',
+            'todayExpenses',
+            'profitToday',
         ));
     }
 }

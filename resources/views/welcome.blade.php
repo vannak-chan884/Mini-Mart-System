@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mini Mart — POS System</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@300;400;600&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         :root {
             --ink: #0D0D14;
@@ -34,7 +35,7 @@
         }
 
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Nunito Sans', sans-serif;
             background: var(--ink);
             color: #E8E4DC;
             min-height: 100vh;
@@ -309,7 +310,7 @@
         .hero-desc {
             font-size: 18px;
             color: #9CA3AF;
-            max-width: 520px;
+            max-width: 800px;
             line-height: 1.7;
             margin-bottom: 48px;
             font-weight: 300;
@@ -745,15 +746,15 @@
             </div>
 
             <h1 class="hero-title">
-                Smart POS for<br>
+                Smart POS for
                 <span class="accent">Cambodia</span>
             </h1>
 
-            <div class="flag-bar">
+            {{-- <div class="flag-bar">
                 <span></span><span></span><span></span>
-            </div>
+            </div> --}}
 
-            <p class="hero-title-kh">ប្រព័ន្ធលក់ទំនិញទំនើប</p>
+            <p class="hero-title-kh mt-4">ប្រព័ន្ធលក់ទំនិញទំនើប</p>
 
             <p class="hero-desc">
                 A modern point-of-sale system built for Cambodian businesses —
@@ -779,7 +780,7 @@
 
             <div class="stats-strip">
                 <div class="stat-item">
-                    <div class="stat-number">2<span class="unit">×</span></div>
+                    <div class="stat-number">2<span class="unit">x</span></div>
                     <div class="stat-label">QR Currencies</div>
                 </div>
                 <div class="stat-item">
