@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RolePermissionController;
 use App\Http\Controllers\Admin\ExpenseController;
 use App\Http\Controllers\Admin\ExpenseCategoryController;
@@ -55,6 +56,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Permissions (admin only)
     Route::get('permissions', [RolePermissionController::class, 'index'])->name('permissions.index');
     Route::post('permissions/update', [RolePermissionController::class, 'update'])->name('permissions.update');
+
+    // User Routes
+    Route::resource('users', UserController::class);
 });
 
 Route::middleware('auth')->group(function () {

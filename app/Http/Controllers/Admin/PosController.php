@@ -70,8 +70,8 @@ class PosController extends Controller
             $cart[$product->id]['quantity']++;
         } else {
             $cart[$product->id] = [
-                "name"     => $product->name,
-                "price"    => $product->sell_price,
+                "name" => $product->name,
+                "price" => $product->sell_price,
                 "quantity" => 1,
             ];
         }
@@ -123,33 +123,33 @@ class PosController extends Controller
 
         DB::beginTransaction();
         try {
-            $lastSale  = Sale::latest()->first();
-            $nextId    = $lastSale ? $lastSale->id + 1 : 1;
+            $lastSale = Sale::latest()->first();
+            $nextId = $lastSale ? $lastSale->id + 1 : 1;
             $invoiceNo = 'INV-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
             $sale = Sale::create([
-                'invoice_no'     => $invoiceNo,
-                'total_amount'   => $totalAmount,
-                'paid_amount'    => $paidAmount,
-                'change_amount'  => $paidAmount - $totalAmount,
+                'invoice_no' => $invoiceNo,
+                'total_amount' => $totalAmount,
+                'paid_amount' => $paidAmount,
+                'change_amount' => $paidAmount - $totalAmount,
                 'payment_method' => 'cash',
-                'user_id'        => auth()->id(),
+                'user_id' => auth()->id(),
             ]);
 
             foreach ($cart as $id => $item) {
                 SaleItem::create([
-                    'sale_id'    => $sale->id,
+                    'sale_id' => $sale->id,
                     'product_id' => $id,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $item['price'],
-                    'total'      => $item['price'] * $item['quantity'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'total' => $item['price'] * $item['quantity'],
                 ]);
                 Product::find($id)->decrement('stock', $item['quantity']);
                 StockHistory::create([
                     'product_id' => $id,
-                    'quantity'   => $item['quantity'],
-                    'type'       => 'out',
-                    'note'       => 'Sold via POS (Cash)'
+                    'quantity' => $item['quantity'],
+                    'type' => 'out',
+                    'note' => 'Sold via POS (Cash)'
                 ]);
             }
 
@@ -187,59 +187,59 @@ class PosController extends Controller
             $amountUSD = round($totalAmount, 2);
 
             $exchangeRate = (int) env('KHR_EXCHANGE_RATE', 4100);
-            $amountKHR    = (int) round($amountUSD * $exchangeRate);
+            $amountKHR = (int) round($amountUSD * $exchangeRate);
 
             $expiresInMs = strval((int) floor(microtime(true) * 1000) + (5 * 60 * 1000));
 
             // USD QR
             $infoUSD = new IndividualInfo(
-                bakongAccountID:     env('BAKONG_ACCOUNT_ID'),
-                merchantName:        env('BAKONG_MERCHANT_NAME', 'My Store'),
-                merchantCity:        env('BAKONG_MERCHANT_CITY', 'Phnom Penh'),
-                currency:            KHQRData::CURRENCY_USD,
-                amount:              $amountUSD,
+                bakongAccountID: env('BAKONG_ACCOUNT_ID'),
+                merchantName: env('BAKONG_MERCHANT_NAME', 'My Store'),
+                merchantCity: env('BAKONG_MERCHANT_CITY', 'Phnom Penh'),
+                currency: KHQRData::CURRENCY_USD,
+                amount: $amountUSD,
                 expirationTimestamp: $expiresInMs
             );
             $resultUSD = BakongKHQR::generateIndividual($infoUSD);
-            $qrUSD     = $resultUSD->data['qr'];
-            $md5USD    = $resultUSD->data['md5'];
+            $qrUSD = $resultUSD->data['qr'];
+            $md5USD = $resultUSD->data['md5'];
 
             // KHR QR
             $infoKHR = new IndividualInfo(
-                bakongAccountID:     env('BAKONG_ACCOUNT_ID'),
-                merchantName:        env('BAKONG_MERCHANT_NAME', 'My Store'),
-                merchantCity:        env('BAKONG_MERCHANT_CITY', 'Phnom Penh'),
-                currency:            KHQRData::CURRENCY_KHR,
-                amount:              $amountKHR,
+                bakongAccountID: env('BAKONG_ACCOUNT_ID'),
+                merchantName: env('BAKONG_MERCHANT_NAME', 'My Store'),
+                merchantCity: env('BAKONG_MERCHANT_CITY', 'Phnom Penh'),
+                currency: KHQRData::CURRENCY_KHR,
+                amount: $amountKHR,
                 expirationTimestamp: $expiresInMs
             );
             $resultKHR = BakongKHQR::generateIndividual($infoKHR);
-            $qrKHR     = $resultKHR->data['qr'];
-            $md5KHR    = $resultKHR->data['md5'];
+            $qrKHR = $resultKHR->data['qr'];
+            $md5KHR = $resultKHR->data['md5'];
 
             $imgUSD = $this->qrToImage($qrUSD);
             $imgKHR = $this->qrToImage($qrKHR);
 
             session([
-                'khqr_md5_usd'  => $md5USD,
-                'khqr_md5_khr'  => $md5KHR,
-                'khqr_amount'   => $amountUSD,
-                'khqr_paid'     => false,   // ← guard flag
-                'khqr_sale_id'  => null,
+                'khqr_md5_usd' => $md5USD,
+                'khqr_md5_khr' => $md5KHR,
+                'khqr_amount' => $amountUSD,
+                'khqr_paid' => false,   // ← guard flag
+                'khqr_sale_id' => null,
             ]);
 
             return response()->json([
                 'usd' => [
                     'qr_image' => $imgUSD,
-                    'md5'      => $md5USD,
-                    'amount'   => $amountUSD,
-                    'label'    => '$' . number_format($amountUSD, 2),
+                    'md5' => $md5USD,
+                    'amount' => $amountUSD,
+                    'label' => '$' . number_format($amountUSD, 2),
                 ],
                 'khr' => [
                     'qr_image' => $imgKHR,
-                    'md5'      => $md5KHR,
-                    'amount'   => $amountKHR,
-                    'label'    => '៛' . number_format($amountKHR),
+                    'md5' => $md5KHR,
+                    'amount' => $amountKHR,
+                    'label' => '៛' . number_format($amountKHR),
                 ],
                 'expires_at' => time() + 300,
             ]);
@@ -254,7 +254,7 @@ class PosController extends Controller
     public function verifyKhqr(Request $request)
     {
         try {
-            $md5      = $request->input('md5');
+            $md5 = $request->input('md5');
             $currency = $request->input('currency', 'usd');
 
             if (!$md5) {
@@ -266,11 +266,11 @@ class PosController extends Controller
             if (session('khqr_paid')) {
                 $saleId = session('khqr_sale_id');
                 return response()->json([
-                    'success'     => true,
-                    'sale_id'     => $saleId,
-                    'currency'    => strtoupper($currency),
+                    'success' => true,
+                    'sale_id' => $saleId,
+                    'currency' => strtoupper($currency),
                     'receipt_url' => "/admin/pos/receipt/{$saleId}",
-                    'already_paid'=> true,
+                    'already_paid' => true,
                 ]);
             }
 
@@ -283,16 +283,16 @@ class PosController extends Controller
                 ->withoutVerifying()
                 ->withHeaders([
                     'Authorization' => 'Bearer ' . $token,
-                    'Content-Type'  => 'application/json',
+                    'Content-Type' => 'application/json',
                 ])
                 ->post('https://api-bakong.nbc.gov.kh/v1/check_transaction_by_md5', [
                     'md5' => $md5
                 ]);
 
             Log::info('Bakong verify', [
-                'currency'    => $currency,
+                'currency' => $currency,
                 'http_status' => $response->status(),
-                'body'        => $response->body(),
+                'body' => $response->body(),
             ]);
 
             if ($response->status() === 401) {
@@ -312,10 +312,10 @@ class PosController extends Controller
                 if (session('khqr_paid')) {
                     $saleId = session('khqr_sale_id');
                     return response()->json([
-                        'success'      => true,
-                        'sale_id'      => $saleId,
-                        'currency'     => strtoupper($currency),
-                        'receipt_url'  => "/admin/pos/receipt/{$saleId}",
+                        'success' => true,
+                        'sale_id' => $saleId,
+                        'currency' => strtoupper($currency),
+                        'receipt_url' => "/admin/pos/receipt/{$saleId}",
                         'already_paid' => true,
                     ]);
                 }
@@ -325,7 +325,7 @@ class PosController extends Controller
                 $paidAmount = $txn['amount'] ?? session('khqr_amount');
                 if ($currency === 'khr') {
                     $exchangeRate = (int) env('KHR_EXCHANGE_RATE', 4100);
-                    $paidAmount   = round($paidAmount / $exchangeRate, 2);
+                    $paidAmount = round($paidAmount / $exchangeRate, 2);
                 }
 
                 $paymentMethod = 'khqr_' . $currency;
@@ -339,7 +339,7 @@ class PosController extends Controller
                 // ✅ Mark as paid in session so the other poller returns
                 // gracefully instead of crashing on empty cart
                 session([
-                    'khqr_paid'    => true,
+                    'khqr_paid' => true,
                     'khqr_sale_id' => $sale->id,
                 ]);
                 session()->forget(['khqr_md5_usd', 'khqr_md5_khr', 'khqr_amount']);
@@ -347,9 +347,9 @@ class PosController extends Controller
                 $this->sendTelegramNotification($sale, $paymentMethod, $txn);
 
                 return response()->json([
-                    'success'     => true,
-                    'sale_id'     => $sale->id,
-                    'currency'    => strtoupper($currency),
+                    'success' => true,
+                    'sale_id' => $sale->id,
+                    'currency' => strtoupper($currency),
                     'receipt_url' => "/admin/pos/receipt/{$sale->id}",
                 ]);
             }
@@ -368,7 +368,7 @@ class PosController extends Controller
     // HELPERS
     private function qrToImage(string $qrString): string
     {
-        $url      = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . urlencode($qrString);
+        $url = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' . urlencode($qrString);
         $contents = @file_get_contents($url);
         return $contents ? 'data:image/png;base64,' . base64_encode($contents) : $url;
     }
@@ -376,7 +376,8 @@ class PosController extends Controller
     private function completeSale($method, $paidAmount, $hash = null)
     {
         $cart = session()->get('cart', []);
-        if (empty($cart)) throw new \Exception("Cart is empty");
+        if (empty($cart))
+            throw new \Exception("Cart is empty");
 
         $total = 0;
         foreach ($cart as $productId => $item) {
@@ -389,35 +390,35 @@ class PosController extends Controller
 
         DB::beginTransaction();
         try {
-            $lastSale  = Sale::latest()->first();
-            $nextId    = $lastSale ? $lastSale->id + 1 : 1;
+            $lastSale = Sale::latest()->first();
+            $nextId = $lastSale ? $lastSale->id + 1 : 1;
             $invoiceNo = 'INV-' . date('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
             $sale = Sale::create([
-                'user_id'        => auth()->id(),
-                'invoice_no'     => $invoiceNo,
-                'total_amount'   => $total,
-                'paid_amount'    => $paidAmount,
-                'change_amount'  => 0,
+                'user_id' => auth()->id(),
+                'invoice_no' => $invoiceNo,
+                'total_amount' => $total,
+                'paid_amount' => $paidAmount,
+                'change_amount' => 0,
                 'payment_method' => $method,
-                'bakong_hash'    => $method !== 'aba_payway' ? $hash : null,
-                'aba_tran_id'    => $method === 'aba_payway'  ? $hash : null,
+                'bakong_hash' => $method !== 'aba_payway' ? $hash : null,
+                'aba_tran_id' => $method === 'aba_payway' ? $hash : null,
             ]);
 
             foreach ($cart as $productId => $item) {
                 SaleItem::create([
-                    'sale_id'    => $sale->id,
+                    'sale_id' => $sale->id,
                     'product_id' => $productId,
-                    'quantity'   => $item['quantity'],
-                    'price'      => $item['price'],
-                    'total'      => $item['price'] * $item['quantity']
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'total' => $item['price'] * $item['quantity']
                 ]);
                 Product::where('id', $productId)->decrement('stock', $item['quantity']);
                 StockHistory::create([
                     'product_id' => $productId,
-                    'quantity'   => $item['quantity'],
-                    'type'       => 'out',
-                    'note'       => 'Sold via POS (' . strtoupper($method) . ')'
+                    'quantity' => $item['quantity'],
+                    'type' => 'out',
+                    'note' => 'Sold via POS (' . strtoupper($method) . ')'
                 ]);
             }
 
@@ -434,16 +435,20 @@ class PosController extends Controller
     {
         try {
             $m = strtolower($method ?? $sale->payment_method);
-            $paymentLabel = match(true) {
-                $m === 'cash'            => 'Cash 💵',
-                $m === 'khqr_usd'        => 'KHQR — USD 🇺🇸✅',
-                $m === 'khqr_khr'        => 'KHQR — KHR 🇰🇭✅',
+            $paymentLabel = match (true) {
+                $m === 'cash' => 'Cash 💵',
+                $m === 'khqr_usd' => 'KHQR — USD 🇺🇸✅',
+                $m === 'khqr_khr' => 'KHQR — KHR 🇰🇭✅',
                 str_contains($m, 'khqr') => 'KHQR Bakong ✅',
-                default                  => strtoupper($m),
+                default => strtoupper($m),
             };
+
+            $soldBy = $sale->user->name ?? auth()->user()->name ?? 'Unknown';
+            $role = $sale->user->role ?? auth()->user()->role ?? '__';
 
             $message = "🧾 *New Sale!*\n";
             $message .= "Invoice: `{$sale->invoice_no}`\n";
+            $message .= "Sold by: {$soldBy} - ({$role})\n";
             $message .= "Total: $" . number_format($sale->total_amount, 2) . "\n";
 
             // ── KHQR transaction details from Bakong ──────────────────
@@ -458,17 +463,12 @@ class PosController extends Controller
 
                     // Map bank tag → full bank name
                     $bankNames = [
-                        'aclb'  => 'ACLEDA Bank',
-                        'abaa'  => 'ABA Bank',
-                        'bkrt'  => 'Bakong',
-                        'wing'  => 'Wing Bank',
-                        'aba'   => 'ABA Bank',
-                        'ppb'   => 'Phnom Penh Bank',
-                        'cbd'   => 'Cambodian Bank',
-                        'campu' => 'Campu Bank',
-                        'adb'   => 'Advanced Bank',
-                        'mab'   => 'Maybank',
-                        'scb'   => 'Sathapana Bank',
+                        'aclb' => 'ACLEDA Bank',
+                        'bkrt' => 'Bakong',
+                        'wing' => 'Wing Bank',
+                        'aba' => 'ABA Bank',
+                        'mab' => 'Maybank',
+                        'scb' => 'Sathapana Bank',
                     ];
                     $bankName = $bankNames[strtolower($bankTag ?? '')] ?? strtoupper($bankTag ?? 'Unknown');
 
@@ -486,7 +486,7 @@ class PosController extends Controller
 
                 // Transaction hash (short version — first 12 chars)
                 if (!empty($txn['hash'])) {
-                    $shortHash = substr($txn['hash'], 0, 12) . '...';
+                    $shortHash = substr($txn['hash'], 0, 32) . '...';
                     $message .= "Hash: `{$shortHash}`\n";
                 }
             }
@@ -496,8 +496,8 @@ class PosController extends Controller
 
             Http::withoutVerifying()
                 ->post("https://api.telegram.org/bot" . env('TELEGRAM_BOT_TOKEN') . "/sendMessage", [
-                    'chat_id'    => env('TELEGRAM_CHAT_ID'),
-                    'text'       => $message,
+                    'chat_id' => env('TELEGRAM_CHAT_ID'),
+                    'text' => $message,
                     'parse_mode' => 'Markdown'
                 ]);
         } catch (\Exception $e) {
@@ -513,19 +513,19 @@ class PosController extends Controller
             return response()->json(['error' => 'Cart is empty'], 422);
         }
 
-        $total   = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
+        $total = collect($cart)->sum(fn($i) => $i['price'] * $i['quantity']);
         $invoice = 'ABA' . strtoupper(substr(uniqid(), -8));
 
         $payway = new AbaPaywayService();
         $result = $payway->createPayment($total, $invoice);
 
-        $status = (string)($result['status'] ?? 'error');
+        $status = (string) ($result['status'] ?? 'error');
 
         // ✅ Handle specific ABA error codes gracefully
         if ($status !== '0' && $status !== '00') {
             $errorMessages = [
                 '21' => 'ABA PayWay credentials have expired. Please contact ABA Bank to renew.',
-                '1'  => 'Invalid hash signature.',
+                '1' => 'Invalid hash signature.',
                 '04' => 'Invalid request data.',
                 '99' => 'ABA PayWay service unavailable.',
             ];
@@ -538,10 +538,10 @@ class PosController extends Controller
         session(['payway_tran_id' => $result['tran_id'], 'payway_amount' => $total]);
 
         return response()->json([
-            'tran_id'   => $result['tran_id'],
+            'tran_id' => $result['tran_id'],
             'qr_string' => $result['qr_string'],
-            'qr_image'  => $result['qr_image'],  // ✅ add this
-            'deeplink'  => $result['deeplink'],
+            'qr_image' => $result['qr_image'],  // ✅ add this
+            'deeplink' => $result['deeplink'],
         ]);
     }
 
@@ -565,8 +565,8 @@ class PosController extends Controller
             $this->sendTelegramNotification($sale, 'aba_payway');
 
             return response()->json([
-                'success'     => true,
-                'sale_id'     => $sale->id,
+                'success' => true,
+                'sale_id' => $sale->id,
                 'receipt_url' => route('admin.pos.receipt', $sale->id),
             ]);
         }
@@ -578,6 +578,6 @@ class PosController extends Controller
     {
         // ABA redirects here after payment — just go back to POS
         return redirect()->route('admin.pos.index')
-                        ->with('success', 'ABA PayWay payment completed.');
+            ->with('success', 'ABA PayWay payment completed.');
     }
 }

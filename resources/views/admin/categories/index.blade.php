@@ -71,22 +71,6 @@
         }
 
         /* Table card */
-        .table-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .table-card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border);
-            background: rgba(255, 255, 255, 0.02);
-        }
-
         .table-card-title {
             font-size: 13px;
             font-weight: 700;
@@ -160,12 +144,6 @@
         }
 
         /* Category name with icon */
-        .cat-name-wrap {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
         .cat-icon {
             width: 34px;
             height: 34px;
@@ -181,7 +159,6 @@
 
         .cat-name {
             font-weight: 600;
-            color: #fff;
             font-size: 14px;
         }
 
@@ -266,7 +243,7 @@
             🗂️ Categories
             <span>{{ $categories->count() }} total</span>
         </div>
-        @canDo('expenses.create')
+        @canDo('categories.create')
         <a href="{{ route('admin.categories.create') }}" class="btn-add inline-flex items-center text-white dark:text-white">
             + Add Category
         </a>
@@ -279,8 +256,8 @@
     @endif
 
     {{-- Table --}}
-    <div class="table-card">
-        <div class="table-card-header">
+    <div class="bg-black/[0.03] dark:bg-white/[0.03] border border-black/[0.08] dark:border-white/[0.07] rounded-2xl overflow-hidden">
+        <div class="flex items-center justify-between bg-black/[0.02] dark:bg-white/[0.02] px-[16px] py-[20px] border-b border-black/[0.08] dark:border-white/[0.07]">
             <div class="table-card-title">All Categories</div>
             <span class="table-total">{{ $categories->count() }} records</span>
         </div>
@@ -299,9 +276,9 @@
                         <tr>
                             <td class="row-num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</td>
                             <td>
-                                <div class="cat-name-wrap">
+                                <div class="cat-name-wrap flex items-center gap-2">
                                     <div class="cat-icon">🗂️</div>
-                                    <div class="cat-name">{{ $category->name }}</div>
+                                    <div class="cat-name text-gray-700 dark:text-white">{{ $category->name }}</div>
                                 </div>
                             </td>
                             <td class="right">
@@ -310,11 +287,13 @@
                                         class="action-btn action-edit">
                                         ✏️ Edit
                                     </a>
-                                    <form action="{{ route('admin.categories.destroy', $category) }}" method="POST"
-                                        onsubmit="return confirm('Delete « {{ $category->name }} »? This cannot be undone.')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="action-btn action-delete">🗑 Delete</button>
-                                    </form>
+                                    @canDo('categories.delete')
+                                        <form action="{{ route('admin.categories.destroy', $category) }}" method="POST"
+                                            onsubmit="return confirm('Delete « {{ $category->name }} »? This cannot be undone.')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="action-btn action-delete">🗑 Delete</button>
+                                        </form>
+                                    @endCanDo
                                 </div>
                             </td>
                         </tr>
