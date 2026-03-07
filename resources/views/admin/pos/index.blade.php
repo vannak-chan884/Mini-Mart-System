@@ -442,8 +442,8 @@
         </div>
 
         {{-- ══════ RIGHT PANEL: CART ═══════════════════════════ --}}
-        <div class="pos-right flex flex-col overflow-hidden flex-shrink-0"
-            style="width:300px;background:var(--panel);border-left:1px solid var(--border);">
+        <div class="pos-right xl:w-[500px] flex flex-col overflow-hidden flex-shrink-0"
+            style="background:var(--panel);border-left:1px solid var(--border);">
 
             {{-- Cart Header ──────────────────────────────────── --}}
             <div class="flex items-center justify-between px-5 py-4 flex-shrink-0"

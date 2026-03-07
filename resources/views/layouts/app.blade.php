@@ -6,9 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Dashboard') — {{ config('app.name', 'Mini Mart') }}</title>
-    {{-- <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@300;400;600&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
-        rel="stylesheet"> --}}
-    {{-- Fonts Family --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -33,7 +30,6 @@
             font-family: 'Noto Sans Khmer', sans-serif;
         }
 
-        /* Noise texture overlay */
         body::before {
             content: '';
             position: fixed;
@@ -50,7 +46,6 @@
             opacity: 0.01;
         }
 
-        /* Sidebar right-edge glow */
         .sidebar-glow::after {
             content: '';
             position: absolute;
@@ -67,7 +62,6 @@
             opacity: 0;
         }
 
-        /* Active nav left-bar indicator */
         .nav-active-bar::before {
             content: '';
             position: absolute;
@@ -79,7 +73,6 @@
             border-radius: 0 2px 2px 0;
         }
 
-        /* Theme toggle icon animation */
         #themeToggle {
             position: relative;
             overflow: hidden;
@@ -111,11 +104,7 @@
             opacity: 1;
         }
 
-        /* ── Sidebar positioning ──────────────────────────────
-           Desktop (≥768px): static in the flex row, always visible.
-           Mobile  (<768px): fixed overlay, hidden by default, shown via .sidebar-open */
         #sidebar {
-            /* desktop default — static in flex flow */
             position: relative;
         }
 
@@ -144,7 +133,6 @@
             }
         }
 
-        /* Scrollbars */
         .scrollbar-sidebar::-webkit-scrollbar {
             width: 4px;
         }
@@ -171,7 +159,6 @@
             border-radius: 3px;
         }
 
-        /* Smooth theme transition */
         body,
         aside,
         header,
@@ -221,11 +208,13 @@
             {{-- Navigation --}}
             <nav class="flex-1 px-3 py-4 overflow-y-auto scrollbar-sidebar flex flex-col gap-0.5">
 
+                {{-- ── MAIN ────────────────────────────────── --}}
                 <div
                     class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-3 pb-1.5">
                     Main
                 </div>
 
+                @canDo('dashboard.view')
                 <a href="{{ route('admin.dashboard.index') }}"
                     class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
                            text-[13.5px] font-medium transition-all duration-[180ms] relative
@@ -235,7 +224,9 @@
                     <span class="text-base w-5 text-center flex-shrink-0">📊</span>
                     Dashboard
                 </a>
+                @endCanDo
 
+                @canDo('pos.view')
                 <a href="{{ route('admin.pos.index') }}"
                     class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
                            text-[13.5px] font-medium transition-all duration-[180ms] relative
@@ -245,12 +236,17 @@
                     <span class="text-base w-5 text-center flex-shrink-0">🖥️</span>
                     POS Terminal
                 </a>
+                @endCanDo
 
+                {{-- ── INVENTORY ───────────────────────────── --}}
+                @canDo('products.view', 'categories.view')
                 <div
                     class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
                     Inventory
                 </div>
+                @endCanDo
 
+                @canDo('products.view')
                 <a href="{{ route('admin.products.index') }}"
                     class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
                            text-[13.5px] font-medium transition-all duration-[180ms] relative
@@ -260,7 +256,9 @@
                     <span class="text-base w-5 text-center flex-shrink-0">📦</span>
                     Products
                 </a>
+                @endCanDo
 
+                @canDo('categories.view')
                 <a href="{{ route('admin.categories.index') }}"
                     class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
                            text-[13.5px] font-medium transition-all duration-[180ms] relative
@@ -270,57 +268,103 @@
                     <span class="text-base w-5 text-center flex-shrink-0">🗂️</span>
                     Categories
                 </a>
+                @endCanDo
 
+                {{-- ── EXPENSES ────────────────────────────── --}}
+                @canDo('expenses.view', 'expense_categories.view')
                 <div
                     class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
                     Expenses
                 </div>
+                @endCanDo
 
+                @canDo('expenses.view')
                 <a href="{{ route('admin.expenses.index') }}"
                     class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
-                               text-[13.5px] font-medium transition-all duration-[180ms] relative
-                               {{ request()->routeIs('admin.expenses.index')
-                                   ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
-                                   : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                           text-[13.5px] font-medium transition-all duration-[180ms] relative
+                           {{ request()->routeIs('admin.expenses.index')
+                               ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                               : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
                     <span class="text-base w-5 text-center flex-shrink-0">💸</span>
                     Expenses
                 </a>
+                @endCanDo
+
+                @canDo('expense_categories.view')
                 <a href="{{ route('admin.expense-categories.index') }}"
                     class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
-                               text-[13.5px] font-medium transition-all duration-[180ms] relative
-                               {{ request()->routeIs('admin.expense-categories.*')
-                                   ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
-                                   : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                           text-[13.5px] font-medium transition-all duration-[180ms] relative
+                           {{ request()->routeIs('admin.expense-categories.*')
+                               ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                               : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
                     <span class="text-base w-5 text-center flex-shrink-0">🗃️</span>
                     Expense Categories
                 </a>
+                @endCanDo
 
+                {{-- ── REPORTS ─────────────────────────────── --}}
+                @canDo('sales.view', 'expenses.view')
                 <div
                     class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
                     Reports
                 </div>
+                @endCanDo
 
+                @canDo('sales.view')
                 @if (Route::has('admin.sales.index'))
                     <a href="{{ route('admin.sales.index') }}"
                         class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
-                               text-[13.5px] font-medium transition-all duration-[180ms] relative
-                               {{ request()->routeIs('admin.sales.*')
-                                   ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
-                                   : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                           text-[13.5px] font-medium transition-all duration-[180ms] relative
+                           {{ request()->routeIs('admin.sales.*')
+                               ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                               : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
                         <span class="text-base w-5 text-center flex-shrink-0">🧾</span>
                         Sales History
                     </a>
+                @endif
+                @endCanDo
 
-                    <a href="{{ route('admin.expenses.monthlyReport') }}"
+                @canDo('expenses.view')
+                <a href="{{ route('admin.expenses.monthlyReport') }}"
+                    class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
+                           text-[13.5px] font-medium transition-all duration-[180ms] relative
+                           {{ request()->routeIs('admin.expenses.monthlyReport')
+                               ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                               : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                    <span class="text-base w-5 text-center flex-shrink-0">📅</span>
+                    Expense History
+                </a>
+                @endCanDo
+
+                {{-- ── ADMIN (admin role only) ─────────────── --}}
+                @canDo('users.view')
+                <div
+                    class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-4 pb-1.5">
+                    Admin
+                </div>
+
+                @if (Route::has('admin.users.index'))
+                    <a href="{{ route('admin.users.index') }}"
                         class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
-                               text-[13.5px] font-medium transition-all duration-[180ms] relative
-                               {{ request()->routeIs('admin.expenses.monthlyReport')
-                                   ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
-                                   : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
-                        <span class="text-base w-5 text-center flex-shrink-0">📅</span>
-                        Expense History
+                           text-[13.5px] font-medium transition-all duration-[180ms] relative
+                           {{ request()->routeIs('admin.users.*')
+                               ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                               : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                        <span class="text-base w-5 text-center flex-shrink-0">👥</span>
+                        Users
                     </a>
                 @endif
+
+                <a href="{{ route('admin.permissions.index') }}"
+                    class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
+                           text-[13.5px] font-medium transition-all duration-[180ms] relative
+                           {{ request()->routeIs('admin.permissions.*')
+                               ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                               : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                    <span class="text-base w-5 text-center flex-shrink-0">🔐</span>
+                    Permissions
+                </a>
+                @endCanDo
 
             </nav>
 
@@ -343,7 +387,9 @@
                         <div class="text-[13px] font-semibold text-[#0D0D14] dark:text-white truncate leading-tight">
                             {{ Auth::user()->name }}
                         </div>
-                        <div class="text-[10px] text-[#6B7280] font-light">Administrator</div>
+                        <div class="text-[10px] text-[#6B7280] font-light capitalize">
+                            {{ Auth::user()->role ?? 'User' }}
+                        </div>
                     </div>
 
                     <span class="text-[#6B7280] text-xs flex-shrink-0 leading-none">⌃</span>
@@ -383,7 +429,7 @@
 
         </aside>
 
-        {{-- Mobile overlay — hidden by default, shown via JS on mobile only --}}
+        {{-- Mobile overlay --}}
         <div id="sidebarOverlay" onclick="closeSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55]"
             style="display:none;"></div>
 
@@ -399,7 +445,6 @@
                        backdrop-blur-xl sticky top-0 z-20">
 
                 <div class="flex items-center gap-3.5">
-                    {{-- Mobile menu toggle — visible only below md --}}
                     <button id="sidebarToggleBtn" onclick="openSidebar()"
                         class="md:hidden flex items-center justify-center w-9 h-9
                                rounded-lg bg-transparent border-0
@@ -420,13 +465,6 @@
                 </div>
 
                 <div class="flex items-center gap-2.5">
-
-                    {{-- Cambodian flag stripe --}}
-                    {{-- <div class="flex flex-col h-4 w-[3px] rounded-sm overflow-hidden gap-px flex-shrink-0">
-                        <span class="bg-[#CC0001] flex-1"></span>
-                        <span class="bg-[#4a90d9]" style="flex:2"></span>
-                        <span class="bg-[#CC0001] flex-1"></span>
-                    </div> --}}
 
                     {{-- Clock --}}
                     <div
@@ -452,6 +490,7 @@
                     </button>
 
                     {{-- POS quick link --}}
+                    @canDo('pos.view')
                     <a href="{{ route('admin.pos.index') }}" title="Open POS"
                         class="w-9 h-9 rounded-[9px] flex items-center justify-center text-base no-underline
                                bg-black/[0.04] dark:bg-white/[0.04]
@@ -462,6 +501,7 @@
                                transition-all duration-[180ms]">
                         🖥️
                     </a>
+                    @endCanDo
 
                     {{-- Profile --}}
                     <a href="{{ route('profile.edit') }}" title="Profile"
@@ -487,7 +527,6 @@
     </div>
 
     <script>
-        // ── Theme toggle ──────────────────────────────────────
         const THEME_KEY = 'minimart_theme';
 
         function applyTheme(theme) {
@@ -511,7 +550,6 @@
 
         applyTheme(localStorage.getItem(THEME_KEY) || 'light');
 
-        // ── Clock ──────────────────────────────────────────────
         function updateClock() {
             const now = new Date();
             const d = document.getElementById('clock-date');
@@ -533,7 +571,6 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        // ── User dropdown ──────────────────────────────────────
         function toggleUserMenu() {
             document.getElementById('userDropdown').classList.toggle('hidden');
         }
@@ -543,7 +580,6 @@
             if (dd && trigger && !trigger.contains(e.target)) dd.classList.add('hidden');
         });
 
-        // ── Mobile sidebar ─────────────────────────────────────
         function openSidebar() {
             document.getElementById('sidebar').classList.add('sidebar-open');
             const ov = document.getElementById('sidebarOverlay');

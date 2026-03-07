@@ -23,7 +23,10 @@
 @endpush
 
 @section('content')
-
+    {{-- Show a message if access is denied --}}
+    @cannotDo('expenses.create')
+        <p>Contact your admin to get access.</p>
+    @endCannotDo
     {{-- ── Greeting ─────────────────────────────────── --}}
     <div class="flex items-center justify-between mb-7 flex-wrap gap-3">
         <div>

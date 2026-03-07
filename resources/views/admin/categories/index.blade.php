@@ -266,9 +266,11 @@
             🗂️ Categories
             <span>{{ $categories->count() }} total</span>
         </div>
+        @canDo('expenses.create')
         <a href="{{ route('admin.categories.create') }}" class="btn-add inline-flex items-center text-white dark:text-white">
             + Add Category
         </a>
+        @endCanDo
     </div>
 
     {{-- Success alert --}}
