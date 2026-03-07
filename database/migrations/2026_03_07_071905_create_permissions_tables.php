@@ -8,33 +8,41 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // ── 1. Master list of every permission key ────────────────
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();   // e.g. "expenses.create"
-            $table->string('label');           // e.g. "Create Expenses"
-            $table->string('group');           // e.g. "Expenses"
+            $table->string('key', 100)->unique();
+            $table->string('label', 150);
+            $table->string('group', 100);
             $table->timestamps();
         });
 
-        // ── 2. Which keys are enabled for a given role ────────────
         Schema::create('role_permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('role');            // "cashier"
-            $table->string('permission_key'); // "expenses.create"
+            $table->string('role', 50);
+            $table->string('permission_key', 100);
             $table->timestamps();
 
             $table->unique(['role', 'permission_key']);
-
             $table->foreign('permission_key')
-                  ->references('key')
-                  ->on('permissions')
-                  ->onDelete('cascade');
+                  ->references('key')->on('permissions')->cascadeOnDelete();
+        });
+
+        Schema::create('user_permissions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('permission_key', 100);
+            $table->boolean('granted')->default(true);
+            $table->timestamps();
+
+            $table->unique(['user_id', 'permission_key']);
+            $table->foreign('permission_key')
+                  ->references('key')->on('permissions')->cascadeOnDelete();
         });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('user_permissions');
         Schema::dropIfExists('role_permissions');
         Schema::dropIfExists('permissions');
     }

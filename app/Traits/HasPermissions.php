@@ -25,6 +25,16 @@ trait HasPermissions
             return true;
         }
 
+        // 1. Check user-specific override first
+        $override = DB::table('user_permissions')
+            ->where('user_id', $this->id)
+            ->where('permission_key', $key)
+            ->first();
+
+        if ($override !== null) {
+            return (bool) $override->granted;
+        }
+
         return $this->cachedPermissions()->contains($key);
     }
 

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -84,5 +85,56 @@ class UserController extends Controller
 
         return redirect()->route('admin.users.index')
             ->with('success', 'User deleted successfully.');
+    }
+
+    public function permissions(User $user)
+    {
+        $allPermissions = DB::table('permissions')
+            ->orderBy('group')->orderBy('key')
+            ->get()
+            ->groupBy('group');
+
+        $rolePermissions = DB::table('role_permissions')
+            ->where('role', $user->role)
+            ->pluck('permission_key', 'permission_key');
+
+        $userOverrides = DB::table('user_permissions')
+            ->where('user_id', $user->id)
+            ->get()
+            ->keyBy('permission_key');
+
+        return view('admin.users.permissions', compact(
+            'user', 'allPermissions', 'rolePermissions', 'userOverrides'
+        ));
+    }
+
+    public function updatePermissions(Request $request, User $user)
+    {
+        $validKeys = DB::table('permissions')->pluck('key', 'key');
+        $overrides = $request->input('overrides', []); // ['key' => 'allow'|'deny'|'inherit']
+
+        DB::transaction(function () use ($user, $overrides, $validKeys) {
+            foreach ($overrides as $key => $value) {
+                if (!$validKeys->has($key)) continue;
+
+                if ($value === 'inherit') {
+                    // Remove override — fall back to role
+                    DB::table('user_permissions')
+                        ->where('user_id', $user->id)
+                        ->where('permission_key', $key)
+                        ->delete();
+                } else {
+                    DB::table('user_permissions')->updateOrInsert(
+                        ['user_id' => $user->id, 'permission_key' => $key],
+                        ['granted' => $value === 'allow', 'updated_at' => now(), 'created_at' => now()]
+                    );
+                }
+            }
+        });
+
+        // Clear any cached role permissions (user overrides are not cached)
+        User::clearPermissionCache($user->role);
+
+        return back()->with('success', 'Permissions updated for ' . $user->name);
     }
 }

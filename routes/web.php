@@ -57,7 +57,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('permissions', [RolePermissionController::class, 'index'])->name('permissions.index');
     Route::post('permissions/update', [RolePermissionController::class, 'update'])->name('permissions.update');
 
-    // User Routes
+    // Per-user permissions
+    Route::get('users/{user}/permissions', [UserController::class, 'permissions'])->name('users.permissions');
+    Route::post('users/{user}/permissions', [UserController::class, 'updatePermissions'])->name('users.permissions.update');
+
+    // Users CRUD
     Route::resource('users', UserController::class);
 });
 
