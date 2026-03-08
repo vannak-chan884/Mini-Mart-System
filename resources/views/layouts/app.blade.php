@@ -669,18 +669,18 @@
 
     <script>
         (function() {
-            const loader     = document.getElementById('globalLoader');
+            const loader = document.getElementById('globalLoader');
             const loaderText = document.getElementById('loaderText');
-            const loaderBar  = document.getElementById('loaderBar');
+            const loaderBar = document.getElementById('loaderBar');
 
             const messages = {
-                nav:    'Navigating…',
-                form:   'Saving…',
+                nav: 'Navigating…',
+                form: 'Saving…',
                 update: 'Updating…',
                 delete: 'Deleting…',
-                login:  'Signing in…',
+                login: 'Signing in…',
                 logout: 'Signing out…',
-                default:'Loading…',
+                default: 'Loading…',
             };
 
             let hideTimer;
@@ -715,26 +715,26 @@
                 if (!href || href === '#' || href.startsWith('javascript') ||
                     href.startsWith('http') || href.startsWith('//') ||
                     link.target === '_blank') return;
-                const type = href.includes('logout') ? 'logout'
-                           : href.includes('login')  ? 'login'
-                           : 'nav';
+                const type = href.includes('logout') ? 'logout' :
+                    href.includes('login') ? 'login' :
+                    'nav';
                 showLoader(type);
             }, true);
 
             // ── Form submits ──────────────────────────────────────────
             document.addEventListener('submit', function(e) {
-                const form        = e.target;
+                const form = e.target;
                 // If form has data-no-loader, skip
                 if (form.closest('[data-no-loader]') || form.hasAttribute('data-no-loader')) return;
                 const methodInput = form.querySelector('input[name="_method"]');
-                const method      = methodInput ? methodInput.value.toUpperCase() : form.method.toUpperCase();
-                const action      = form.action || '';
-                const type = method === 'DELETE'       ? 'delete'
-                           : method === 'PUT'          ? 'update'
-                           : method === 'PATCH'        ? 'update'
-                           : action.includes('logout') ? 'logout'
-                           : action.includes('login')  ? 'login'
-                           : 'form';
+                const method = methodInput ? methodInput.value.toUpperCase() : form.method.toUpperCase();
+                const action = form.action || '';
+                const type = method === 'DELETE' ? 'delete' :
+                    method === 'PUT' ? 'update' :
+                    method === 'PATCH' ? 'update' :
+                    action.includes('logout') ? 'logout' :
+                    action.includes('login') ? 'login' :
+                    'form';
                 showLoader(type);
             }, true);
 
