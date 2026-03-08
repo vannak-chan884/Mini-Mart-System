@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use App\Services\ActivityLogger;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -28,6 +29,9 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // In store() after Auth::login():
+        ActivityLogger::login();
+
         return redirect()->intended(route('admin.dashboard.index', absolute: false));
     }
 
@@ -36,11 +40,23 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // ✅ Capture before ANYTHING is cleared
+        $userId = auth()->id();
+        $name   = auth()->user()?->name ?? 'Unknown';
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
+
+        // ✅ Log AFTER logout but pass userId explicitly so auth() null doesn't matter
+        \App\Models\ActivityLog::create([
+            'user_id'     => $userId,
+            'action'      => 'logout',
+            'module'      => 'Auth',
+            'description' => "{$name} logged out",
+            'ip_address'  => $request->ip(),
+        ]);
 
         return redirect('/');
     }

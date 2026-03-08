@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\StockHistory;
+use App\Services\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -52,6 +53,9 @@ class ProductController extends Controller
             ]);
         }
 
+        // Activity Logs
+        ActivityLogger::created('Product', $product, "Product '{$product->name}' created");
+
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product created successfully.');
@@ -76,6 +80,9 @@ class ProductController extends Controller
             'low_stock_alert' => 'nullable|integer|min:0',
         ]);
 
+        // ✅ Capture ALL current values before update logs
+        $old = $product->getAttributes();
+
         $oldStock = $product->stock;
 
         if ($request->hasFile('image')) {
@@ -87,6 +94,10 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
+
+        // ✅ Fresh from DB to get all updated values logs
+        $product->refresh();
+        $new = $product->getAttributes();
 
         // Track stock difference
         if ($oldStock != $validated['stock']) {
@@ -101,6 +112,22 @@ class ProductController extends Controller
             ]);
         }
 
+        // ✅ Compare and collect only what changed logs
+        $changes = [];
+        $skip = ['updated_at', 'created_at']; // ignore timestamp fields
+
+        foreach ($new as $key => $value) {
+            if (in_array($key, $skip)) continue;
+            if (isset($old[$key]) && (string)$old[$key] !== (string)$value) {
+                $changes[$key] = [
+                    'from' => $old[$key],
+                    'to'   => $value,
+                ];
+            }
+        }
+
+        ActivityLogger::updated('Product', $product, $changes);
+
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product updated successfully.');
@@ -113,6 +140,9 @@ class ProductController extends Controller
         }
 
         $product->delete();
+
+        // Action logs
+        ActivityLogger::deleted('Product', "Product '{$product->name}' deleted", $product);
 
         return redirect()
             ->route('admin.products.index')

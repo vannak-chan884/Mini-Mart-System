@@ -134,16 +134,15 @@
                                             ✏️ Edit
                                         </a>
 
-                                        <a href="{{ route('admin.users.permissions', $user) }}"
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
-                                                text-purple-600 dark:text-purple-400 no-underline
-                                                bg-purple-50 dark:bg-purple-900/20
-                                                border border-purple-200 dark:border-purple-800
-                                                hover:bg-purple-100 transition-all duration-150">
-                                            🔑 Permissions
-                                        </a>
-
                                         @if ($user->id !== auth()->id())
+                                            <a href="{{ route('admin.users.permissions', $user) }}"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                                                    text-purple-600 dark:text-purple-400 no-underline
+                                                    bg-purple-50 dark:bg-purple-900/20
+                                                    border border-purple-200 dark:border-purple-800
+                                                    hover:bg-purple-100 transition-all duration-150">
+                                                🔑 Permissions
+                                            </a>
                                             <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                                                 onsubmit="return confirm('Delete {{ addslashes($user->name) }}? This cannot be undone.')">
                                                 @csrf

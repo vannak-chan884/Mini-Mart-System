@@ -364,6 +364,11 @@
                     <span class="text-base w-5 text-center flex-shrink-0">🔐</span>
                     Permissions
                 </a>
+
+                <a href="{{ route('admin.activity-logs.index') }}">
+                    <span class="text-base w-5 text-center flex-shrink-0">📋</span>
+                    Activity Log
+                </a>
                 @endCanDo
 
             </nav>
