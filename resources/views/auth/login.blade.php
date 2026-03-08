@@ -559,7 +559,7 @@
 
     {{-- NAV --}}
     <nav>
-        <a href="{{ route('login') ?? '/' }}" class="nav-logo">
+        <a href="{{ url('/') }}" class="nav-logo">
             <div class="nav-logo-icon">🏪</div>
             <div>
                 <div class="nav-logo-name">Mini Mart</div>
@@ -687,6 +687,104 @@
                 btn.textContent = '👁';
             }
         }
+    </script>
+
+    {{-- Loading overlay --}}
+    <div id="globalLoader"
+        style="display:none; position:fixed; inset:0; z-index:9999;
+           background:rgba(0,0,0,0.45); backdrop-filter:blur(3px);
+           align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+        <div
+            style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+                border-radius:20px; padding:28px 36px;
+                display:flex; flex-direction:column; align-items:center; gap:14px;
+                backdrop-filter:blur(16px); box-shadow:0 8px 40px rgba(0,0,0,0.4);">
+            <div style="position:relative; width:48px; height:48px;">
+                <svg style="animation:spin 0.9s linear infinite; width:48px; height:48px;" viewBox="0 0 48 48"
+                    fill="none">
+                    <circle cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
+                    <path d="M24 4 A20 20 0 0 1 44 24" stroke="url(#lg2)" stroke-width="4" stroke-linecap="round" />
+                    <defs>
+                        <linearGradient id="lg2" x1="24" y1="4" x2="44" y2="24"
+                            gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#3B82F6" />
+                            <stop offset="100%" stop-color="#003087" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span
+                    style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;">🏪</span>
+            </div>
+            <div style="text-align:center;">
+                <div id="loaderText"
+                    style="font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:rgba(255,255,255,0.9);">
+                    Signing in…
+                </div>
+                <div
+                    style="font-family:'DM Sans',sans-serif;font-size:11px;color:rgba(255,255,255,0.4);margin-top:3px;">
+                    Mini Mart POS</div>
+            </div>
+            <div style="width:160px;height:3px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;">
+                <div id="loaderBar"
+                    style="height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#003087,#3B82F6);transition:width 0.4s ease;">
+                </div>
+            </div>
+        </div>
+    </div>
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script>
+        (function() {
+            const loader = document.getElementById('globalLoader');
+            const loaderText = document.getElementById('loaderText');
+            const loaderBar = document.getElementById('loaderBar');
+
+            function showLoader(msg) {
+                loader.style.display = 'flex';
+                loaderText.textContent = msg || 'Loading…';
+                loaderBar.style.transition = 'none';
+                loaderBar.style.width = '0%';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    loaderBar.style.transition = 'width 10s cubic-bezier(0.1,0.4,0.2,1)';
+                    loaderBar.style.width = '85%';
+                }));
+            }
+
+            function hideLoader() {
+                try {
+                    sessionStorage.removeItem('loaderMsg');
+                } catch (e) {}
+                loaderBar.style.transition = 'width 0.3s ease';
+                loaderBar.style.width = '100%';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    loaderBar.style.width = '0%';
+                }, 300);
+            }
+
+            // If we arrived here from another page (e.g. logout redirect), clear the loader
+            try {
+                const msg = sessionStorage.getItem('loaderMsg');
+                if (msg) {
+                    showLoader(msg);
+                    setTimeout(hideLoader, 400);
+                }
+            } catch (e) {}
+
+            // Show loader on login form submit
+            document.addEventListener('submit', function(e) {
+                showLoader('Signing in…');
+                try {
+                    sessionStorage.setItem('loaderMsg', 'Signing in…');
+                } catch (e) {}
+            }, true);
+        })();
     </script>
 
 </body>

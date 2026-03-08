@@ -209,10 +209,12 @@
             <nav class="flex-1 px-3 py-4 overflow-y-auto scrollbar-sidebar flex flex-col gap-0.5">
 
                 {{-- ── MAIN ────────────────────────────────── --}}
+                @canDo('dashboard.view', 'pos.view')
                 <div
                     class="text-[10px] font-bold tracking-[1.2px] uppercase text-[#6B7280] dark:text-[#9CA3AF] px-3 pt-3 pb-1.5">
                     Main
                 </div>
+                @endCanDo
 
                 @canDo('dashboard.view')
                 <a href="{{ route('admin.dashboard.index') }}"
@@ -365,7 +367,12 @@
                     Permissions
                 </a>
 
-                <a href="{{ route('admin.activity-logs.index') }}">
+                <a href="{{ route('admin.activity-logs.index') }}"
+                    class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
+                            text-[13.5px] font-medium transition-all duration-[180ms] relative
+                            {{ request()->routeIs('admin.activity-logs.*')
+                                ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                                : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
                     <span class="text-base w-5 text-center flex-shrink-0">📋</span>
                     Activity Log
                 </a>
@@ -598,6 +605,145 @@
             ov.style.display = 'none';
             document.body.style.overflow = '';
         }
+    </script>
+
+    {{-- ── Global Loading Overlay ──────────────────────────────── --}}
+    <div id="globalLoader"
+        style="display:none; position:fixed; inset:0; z-index:9999;
+               background:rgba(0,0,0,0.45); backdrop-filter:blur(3px);
+               align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+
+        {{-- Spinner card --}}
+        <div
+            style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+                    border-radius:20px; padding:28px 36px;
+                    display:flex; flex-direction:column; align-items:center; gap:14px;
+                    backdrop-filter:blur(16px); box-shadow:0 8px 40px rgba(0,0,0,0.4);">
+
+            {{-- Animated ring --}}
+            <div style="position:relative; width:48px; height:48px;">
+                <svg style="animation:spin 0.9s linear infinite; width:48px; height:48px;" viewBox="0 0 48 48"
+                    fill="none">
+                    <circle cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
+                    <path d="M24 4 A20 20 0 0 1 44 24" stroke="url(#lg)" stroke-width="4" stroke-linecap="round" />
+                    <defs>
+                        <linearGradient id="lg" x1="24" y1="4" x2="44" y2="24"
+                            gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#3B82F6" />
+                            <stop offset="100%" stop-color="#003087" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                {{-- Store icon in center --}}
+                <span
+                    style="position:absolute; inset:0; display:flex; align-items:center;
+                             justify-content:center; font-size:16px;">🏪</span>
+            </div>
+
+            {{-- Text --}}
+            <div style="text-align:center;">
+                <div id="loaderText"
+                    style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+                            color:rgba(255,255,255,0.9); letter-spacing:0.2px;">
+                    Loading…
+                </div>
+                <div
+                    style="font-family:'DM Sans',sans-serif; font-size:11px;
+                            color:rgba(255,255,255,0.4); margin-top:3px;">
+                    Mini Mart POS
+                </div>
+            </div>
+
+            {{-- Progress bar --}}
+            <div
+                style="width:160px; height:3px; background:rgba(255,255,255,0.08);
+                        border-radius:999px; overflow:hidden;">
+                <div id="loaderBar"
+                    style="height:100%; width:0%; border-radius:999px;
+                            background:linear-gradient(90deg,#003087,#3B82F6);
+                            transition:width 0.4s ease;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const loader     = document.getElementById('globalLoader');
+            const loaderText = document.getElementById('loaderText');
+            const loaderBar  = document.getElementById('loaderBar');
+
+            const messages = {
+                nav:    'Navigating…',
+                form:   'Saving…',
+                update: 'Updating…',
+                delete: 'Deleting…',
+                login:  'Signing in…',
+                logout: 'Signing out…',
+                default:'Loading…',
+            };
+
+            let hideTimer;
+
+            function showLoader(type) {
+                clearTimeout(hideTimer);
+                loader.style.display = 'flex';
+                loaderText.textContent = messages[type] || messages.default;
+                loaderBar.style.transition = 'none';
+                loaderBar.style.width = '0%';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    loaderBar.style.transition = 'width 10s cubic-bezier(0.1,0.4,0.2,1)';
+                    loaderBar.style.width = '85%';
+                }));
+            }
+
+            function hideLoader() {
+                loaderBar.style.transition = 'width 0.3s ease';
+                loaderBar.style.width = '100%';
+                hideTimer = setTimeout(() => {
+                    loader.style.display = 'none';
+                    loaderBar.style.width = '0%';
+                }, 300);
+            }
+
+            // ── Link clicks ───────────────────────────────────────────
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-no-loader]')) return;
+                const link = e.target.closest('a[href]');
+                if (!link) return;
+                const href = link.getAttribute('href');
+                if (!href || href === '#' || href.startsWith('javascript') ||
+                    href.startsWith('http') || href.startsWith('//') ||
+                    link.target === '_blank') return;
+                const type = href.includes('logout') ? 'logout'
+                           : href.includes('login')  ? 'login'
+                           : 'nav';
+                showLoader(type);
+            }, true);
+
+            // ── Form submits ──────────────────────────────────────────
+            document.addEventListener('submit', function(e) {
+                const form        = e.target;
+                // If form has data-no-loader, skip
+                if (form.closest('[data-no-loader]') || form.hasAttribute('data-no-loader')) return;
+                const methodInput = form.querySelector('input[name="_method"]');
+                const method      = methodInput ? methodInput.value.toUpperCase() : form.method.toUpperCase();
+                const action      = form.action || '';
+                const type = method === 'DELETE'       ? 'delete'
+                           : method === 'PUT'          ? 'update'
+                           : method === 'PATCH'        ? 'update'
+                           : action.includes('logout') ? 'logout'
+                           : action.includes('login')  ? 'login'
+                           : 'form';
+                showLoader(type);
+            }, true);
+
+            // ── Hide on back/forward cache ────────────────────────────
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) hideLoader();
+            });
+
+        })();
     </script>
 
     @stack('scripts')

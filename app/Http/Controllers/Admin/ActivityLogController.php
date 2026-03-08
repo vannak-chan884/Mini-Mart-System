@@ -16,11 +16,11 @@ class ActivityLogController extends Controller
             ->when($request->action, fn($q) => $q->where('action', $request->action))
             ->when($request->date, fn($q) => $q->whereDate('created_at', $request->date))
             ->latest()
-            ->paginate(25)
+            ->paginate(7)
             ->withQueryString();
 
         $modules = ActivityLog::distinct()->pluck('module')->sort()->values();
-        $users   = \App\Models\User::orderBy('name')->get(['id', 'name']);
+        $users = \App\Models\User::orderBy('name')->get(['id', 'name']);
 
         return view('admin.activity-logs.index', compact('logs', 'modules', 'users'));
     }

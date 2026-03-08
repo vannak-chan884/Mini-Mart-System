@@ -7,7 +7,9 @@
     <title>Mini Mart — POS System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+        rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         :root {
@@ -888,6 +890,39 @@
         </footer>
 
     </div>
+
+    {{-- Loading overlay for auth pages --}}
+    {{-- <div id="globalLoader"
+        style="display:none; position:fixed; inset:0; z-index:9999;
+     background:rgba(0,0,0,0.45); backdrop-filter:blur(3px);
+     align-items:center; justify-content:center;">
+        <div
+            style="background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+                border-radius:20px; padding:28px 36px; display:flex; flex-direction:column;
+                align-items:center; gap:14px; backdrop-filter:blur(16px);">
+            <svg style="animation:spin 0.9s linear infinite; width:48px; height:48px;" viewBox="0 0 48 48"
+                fill="none">
+                <circle cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
+                <path d="M24 4 A20 20 0 0 1 44 24" stroke="#3B82F6" stroke-width="4" stroke-linecap="round" />
+            </svg>
+            <div
+                style="font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600;
+                    color:rgba(255,255,255,0.9);">
+                Signing in…</div>
+        </div>
+    </div>
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('submit', function() {
+            document.getElementById('globalLoader').style.display = 'flex';
+        });
+    </script> --}}
 
 </body>
 

@@ -27,13 +27,13 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'category_id'     => 'required|exists:categories,id',
-            'barcode'         => 'required|unique:products,barcode',
-            'name'            => 'required|string|max:255',
-            'image'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'cost_price'      => 'required|numeric|min:0',
-            'sell_price'      => 'required|numeric|min:0',
-            'stock'           => 'required|integer|min:0',
+            'category_id' => 'required|exists:categories,id',
+            'barcode' => 'required|unique:products,barcode',
+            'name' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'cost_price' => 'required|numeric|min:0',
+            'sell_price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'low_stock_alert' => 'nullable|integer|min:0',
         ]);
 
@@ -47,9 +47,9 @@ class ProductController extends Controller
         if ($validated['stock'] > 0) {
             StockHistory::create([
                 'product_id' => $product->id,
-                'quantity'   => $validated['stock'],
-                'type'       => 'in',
-                'note'       => 'Initial stock'
+                'quantity' => $validated['stock'],
+                'type' => 'in',
+                'note' => 'Initial stock'
             ]);
         }
 
@@ -70,13 +70,13 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $validated = $request->validate([
-            'category_id'     => 'required|exists:categories,id',
-            'barcode'         => 'required|unique:products,barcode,' . $product->id,
-            'name'            => 'required|string|max:255',
-            'image'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            'cost_price'      => 'required|numeric|min:0',
-            'sell_price'      => 'required|numeric|min:0',
-            'stock'           => 'required|integer|min:0',
+            'category_id' => 'required|exists:categories,id',
+            'barcode' => 'required|unique:products,barcode,' . $product->id,
+            'name' => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'cost_price' => 'required|numeric|min:0',
+            'sell_price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
             'low_stock_alert' => 'nullable|integer|min:0',
         ]);
 
@@ -106,9 +106,9 @@ class ProductController extends Controller
 
             StockHistory::create([
                 'product_id' => $product->id,
-                'quantity'   => abs($difference),
-                'type'       => $difference > 0 ? 'in' : 'out',
-                'note'       => 'Manual stock adjustment'
+                'quantity' => abs($difference),
+                'type' => $difference > 0 ? 'in' : 'out',
+                'note' => 'Manual stock adjustment'
             ]);
         }
 
@@ -117,11 +117,12 @@ class ProductController extends Controller
         $skip = ['updated_at', 'created_at']; // ignore timestamp fields
 
         foreach ($new as $key => $value) {
-            if (in_array($key, $skip)) continue;
-            if (isset($old[$key]) && (string)$old[$key] !== (string)$value) {
+            if (in_array($key, $skip))
+                continue;
+            if (isset($old[$key]) && (string) $old[$key] !== (string) $value) {
                 $changes[$key] = [
                     'from' => $old[$key],
-                    'to'   => $value,
+                    'to' => $value,
                 ];
             }
         }
@@ -135,17 +136,49 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->image) {
-            Storage::disk('public')->delete($product->image);
+        $name = $product->name;
+
+        if (auth()->user()->role === 'cashier') {
+            // Cashier — soft delete (move to trash)
+            $product->delete(); // sets deleted_at, record stays in DB
+            ActivityLogger::log('deleted', 'Product', "Product '{$name}' moved to trash by cashier", $product);
+            return redirect()->route('admin.products.index')
+                ->with('success', "'{$name}' moved to trash.");
         }
 
-        $product->delete();
+        // Admin — hard delete permanently
+        $product->forceDelete();
+        ActivityLogger::deleted('Product', "Product '{$name}' permanently deleted", $product);
+        return redirect()->route('admin.products.index')
+            ->with('success', "'{$name}' permanently deleted.");
+    }
 
-        // Action logs
-        ActivityLogger::deleted('Product', "Product '{$product->name}' deleted", $product);
+    // Trash Page controller methods
+    // Show trashed products
+    public function trash(): \Illuminate\View\View
+    {
+        $products = Product::onlyTrashed()->latest('deleted_at')->paginate(15);
+        return view('admin.products.trash', compact('products'));
+    }
 
-        return redirect()
-            ->route('admin.products.index')
-            ->with('success', 'Product deleted successfully.');
+    // Restore a trashed product
+    public function restore(int $id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $product->restore(); // clears deleted_at
+        ActivityLogger::log('updated', 'Product', "Product '{$product->name}' restored from trash", $product);
+        return redirect()->route('admin.products.trash')
+            ->with('success', "'{$product->name}' restored successfully.");
+    }
+
+    // Permanently delete from trash (admin only)
+    public function forceDestroy(int $id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+        $name = $product->name;
+        $product->forceDelete();
+        ActivityLogger::deleted('Product', "Product '{$name}' permanently deleted");
+        return redirect()->route('admin.products.trash')
+            ->with('success', "'{$name}' permanently deleted.");
     }
 }

@@ -23,6 +23,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     Route::resource('categories', CategoryController::class);
+
+    // Add these BEFORE Route::resource('products', ...)
+    Route::get('products/trash', [ProductController::class, 'trash'])->name('products.trash');
+    Route::post('products/{id}/restore', [ProductController::class, 'restore'])->name('products.restore');
+    Route::delete('products/{id}/force-delete', [ProductController::class, 'forceDestroy'])->name('products.forceDestroy');
+
     Route::resource('products', ProductController::class);
 
     // POS Routes
