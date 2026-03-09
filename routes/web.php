@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ClosingReportController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RolePermissionController;
@@ -37,6 +38,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('pos/update', [PosController::class, 'updateCart'])->name('pos.update');
     Route::post('pos/remove', [PosController::class, 'removeFromCart'])->name('pos.remove');
     Route::post('pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+    Route::get('pos/find-by-barcode', [PosController::class, 'findByBarcode'])->name('pos.findByBarcode');
 
     // ABA PayWay Routes
     Route::post('pos/payway/generate', [PosController::class, 'generatePayway'])->name('pos.payway.generate');
@@ -73,6 +75,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Logs 
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    // Closing Reports
+    Route::get('closing-reports', [ClosingReportController::class, 'index'])->name('closing-reports.index');
+    Route::get('closing-reports/{closingReport}', [ClosingReportController::class, 'show'])->name('closing-reports.show');
+    Route::post('closing-reports/trigger', [ClosingReportController::class, 'trigger'])->name('closing-reports.trigger');
+    Route::post('closing-reports/{closingReport}/resend-telegram', [ClosingReportController::class, 'resendTelegram'])->name('closing-reports.resend-telegram');
 });
 
 Route::middleware('auth')->group(function () {

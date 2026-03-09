@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\StockHistory;
@@ -579,5 +580,40 @@ class PosController extends Controller
         // ABA redirects here after payment — just go back to POS
         return redirect()->route('admin.pos.index')
             ->with('success', 'ABA PayWay payment completed.');
+    }
+
+    public function findByBarcode(Request $request)
+    {
+        $barcode = trim($request->get('barcode', ''));
+
+        if (!$barcode) {
+            return response()->json(['found' => false]);
+        }
+
+        $product = Product::where('barcode', $barcode)
+            ->where('stock', '>', 0)
+            ->first();
+
+        if (!$product) {
+            // Try partial match as fallback
+            $product = Product::where('barcode', 'like', "%{$barcode}%")
+                ->where('stock', '>', 0)
+                ->first();
+        }
+
+        if (!$product) {
+            return response()->json(['found' => false]);
+        }
+
+        return response()->json([
+            'found'   => true,
+            'product' => [
+                'id'         => $product->id,
+                'name'       => $product->name,
+                'barcode'    => $product->barcode,
+                'sell_price' => $product->sell_price,
+                'stock'      => $product->stock,
+            ],
+        ]);
     }
 }

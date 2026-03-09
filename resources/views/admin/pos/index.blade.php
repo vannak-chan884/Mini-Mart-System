@@ -43,7 +43,6 @@
             --text-3: #555968;
         }
 
-        /* ── Scrollbars ─────────────────────────────────────── */
         #product-grid::-webkit-scrollbar,
         #cart-items::-webkit-scrollbar {
             width: 3px;
@@ -64,7 +63,6 @@
             background: transparent;
         }
 
-        /* ── Keyframes ──────────────────────────────────────── */
         @keyframes fadeSlideUp {
             from {
                 opacity: 0;
@@ -115,6 +113,21 @@
             }
         }
 
+        /* ADDED for camera modal scan line */
+        @keyframes scanLine {
+            0% {
+                top: 20%;
+            }
+
+            50% {
+                top: 80%;
+            }
+
+            100% {
+                top: 20%;
+            }
+        }
+
         .modal-anim {
             animation: fadeSlideUp .28s cubic-bezier(.34, 1.3, .64, 1);
         }
@@ -131,7 +144,6 @@
             transition: width 1s linear, background-color .8s;
         }
 
-        /* ── Product Grid ────────────────────────────────────── */
         #product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
@@ -147,7 +159,6 @@
             }
         }
 
-        /* ── Product Card ────────────────────────────────────── */
         .product-card {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -216,7 +227,6 @@
             transform: scale(1.08);
         }
 
-        /* Product name clamp */
         .product-name {
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -224,7 +234,6 @@
             overflow: hidden;
         }
 
-        /* ── List View ───────────────────────────────────────── */
         #product-grid.list-view {
             grid-template-columns: 1fr;
             gap: 5px;
@@ -294,12 +303,10 @@
             font-size: 11px;
         }
 
-        /* ── KHQR backdrop open ──────────────────────────────── */
         .qr-backdrop.open {
             display: flex;
         }
 
-        /* ── KHQR header shimmer ─────────────────────────────── */
         .khqr-header::after {
             content: '';
             position: absolute;
@@ -310,12 +317,27 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .25), transparent);
         }
 
-        /* ── Cart items separator ───────────────────────────── */
         .cart-item-sep {
             border-bottom: 1px solid var(--border);
         }
 
-        /* ── Mobile ──────────────────────────────────────────── */
+        /* ADDED: html5-qrcode UI cleanup */
+        #qr-reader {
+            border: none !important;
+        }
+
+        #qr-reader video {
+            border-radius: 10px !important;
+        }
+
+        #qr-reader__scan_region {
+            border: none !important;
+        }
+
+        #qr-reader__dashboard {
+            display: none !important;
+        }
+
         @media (max-width:700px) {
             .pos-shell {
                 flex-direction: column;
@@ -368,6 +390,16 @@
                         onfocus="this.style.borderColor='rgba(59,130,246,.5)';this.style.background='rgba(59,130,246,.06)';this.style.boxShadow='0 0 0 3px rgba(59,130,246,.1)';document.getElementById('searchIconWrap').style.color='var(--blue)'"
                         onblur="this.style.borderColor='';this.style.background='var(--glass)';this.style.boxShadow='';document.getElementById('searchIconWrap').style.color='var(--text-3)'">
                 </div>
+
+                {{-- ADDED: Camera scan button ────────────────── --}}
+                <button onclick="openCameraScanner()" title="Scan barcode with camera"
+                    style="flex-shrink:0;width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
+                           background:var(--glass);color:var(--text-3);cursor:pointer;font-size:16px;
+                           display:flex;align-items:center;justify-content:center;transition:all .2s;"
+                    onmouseover="this.style.borderColor='rgba(59,130,246,.5)';this.style.color='#3B82F6';this.style.background='rgba(59,130,246,.08)'"
+                    onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-3)';this.style.background='var(--glass)'">
+                    📷
+                </button>
 
                 {{-- View Toggle ─────────────────────────────── --}}
                 <div class="flex gap-0.5 p-0.5 rounded-[9px] flex-shrink-0"
@@ -548,8 +580,6 @@
         <div class="modal-anim w-full overflow-hidden"
             style="max-width:560px;background:var(--panel);border:1px solid var(--border-2);
                 border-radius:22px;box-shadow:0 40px 100px rgba(0,0,0,.35);">
-
-            {{-- KHQR Header --}}
             <div class="khqr-header relative text-center"
                 style="background:linear-gradient(135deg,#0A1645 0%,#1D4ED8 55%,#3B82F6 100%);padding:22px 28px 18px;">
                 <div class="flex h-[3px] w-12 rounded overflow-hidden gap-px mx-auto mb-3">
@@ -565,11 +595,8 @@
                     Any currency · All NBC Bakong-registered banks
                 </div>
             </div>
-
-            {{-- KHQR Body --}}
             <div style="padding:18px 20px 20px;">
                 <div class="qr-grid grid grid-cols-2 gap-3 mb-4">
-                    {{-- USD --}}
                     <div class="rounded-xl p-4 text-center"
                         style="background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);">
                         <div style="font-size:11.5px;font-weight:700;color:#2563EB;margin-bottom:4px;">🇺🇸 US Dollar</div>
@@ -583,7 +610,6 @@
                         <div style="font-size:9px;color:var(--text-3);margin-top:7px;">ABA · Wing · ACLEDA · all banks
                         </div>
                     </div>
-                    {{-- KHR --}}
                     <div class="rounded-xl p-4 text-center"
                         style="background:rgba(204,0,1,.06);border:1px solid rgba(204,0,1,.18);">
                         <div style="font-size:11.5px;font-weight:700;color:#B91C1C;margin-bottom:4px;">🇰🇭 Khmer Riel
@@ -599,8 +625,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- Status rows --}}
                 <div id="statusWaiting"
                     style="display:block;text-align:center;padding:11px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);border-radius:10px;font-size:12.5px;color:#2563EB;font-weight:500;margin-bottom:12px;">
                     <span class="pulse-dot inline-block w-[6px] h-[6px] rounded-full mr-2 align-middle"
@@ -618,8 +642,6 @@
                     style="display:none;padding:11px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;text-align:center;font-size:12.5px;color:#DC2626;margin-bottom:12px;">
                     ⏰ QR Expired — cancel and try again.
                 </div>
-
-                {{-- Countdown --}}
                 <div id="countdownArea" class="mb-3">
                     <div class="flex justify-between mb-1.5" style="font-size:11px;color:var(--text-3);">
                         <span>Expires in</span>
@@ -631,10 +653,8 @@
                             style="height:100%;border-radius:999px;background:var(--green);width:100%;"></div>
                     </div>
                 </div>
-
                 <div id="exchangeNote" style="text-align:center;font-size:10.5px;color:var(--text-3);margin-bottom:12px;">
                 </div>
-
                 <button id="cancelQrBtn" onclick="closeQrPopup()"
                     style="width:100%;padding:10px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);
                        border-radius:9px;color:#DC2626;font-size:12.5px;font-weight:600;
@@ -648,7 +668,7 @@
     </div>
 
     {{-- ══════════════════════════════════════════════════════════
-     ABA PAYWAY MODAL
+     ABA PAYWAY MODAL  (unchanged from original)
 ══════════════════════════════════════════════════════════ --}}
     <div id="abaBackdrop"
         style="display:none;position:fixed;inset:0;background:rgba(15,20,40,.75);backdrop-filter:blur(14px);z-index:300;align-items:center;justify-content:center;padding:20px;">
@@ -656,22 +676,18 @@
             style="background:var(--panel);border:1px solid var(--border-2);border-radius:22px;
                 width:100%;max-width:330px;padding:28px 24px;
                 box-shadow:0 40px 100px rgba(0,0,0,.3);">
-
             <div
                 style="width:50px;height:50px;background:linear-gradient(135deg,#E1232E,#3B82F6);border-radius:15px;
                     display:flex;align-items:center;justify-content:center;font-size:23px;
                     margin:0 auto 14px;box-shadow:0 8px 24px rgba(59,130,246,.3);">
                 🏦</div>
-
             <div
                 style="font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:var(--text);margin-bottom:3px;">
                 ABA PayWay</div>
             <div style="font-size:12px;color:var(--text-3);margin-bottom:16px;">Scan with ABA Mobile to pay</div>
-
             <div id="abaAmount"
                 style="font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:700;color:#E1232E;margin-bottom:16px;">
             </div>
-
             <div
                 style="background:#fff;border-radius:14px;padding:11px;margin:0 auto 16px;
                     width:200px;height:200px;display:flex;align-items:center;justify-content:center;
@@ -679,7 +695,6 @@
                 <img id="abaQrImage" src="" alt="ABA QR"
                     style="width:100%;height:100%;object-fit:contain;border-radius:4px;">
             </div>
-
             <div id="abaWaiting"
                 style="display:flex;align-items:center;justify-content:center;gap:7px;
                     padding:9px 14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
@@ -687,7 +702,6 @@
                 <span class="pulse-dot inline-block rounded-full" style="width:6px;height:6px;background:#3B82F6;"></span>
                 Waiting for payment…
             </div>
-
             <div id="abaTimerWrap"
                 style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;">
                 <svg width="18" height="18" viewBox="0 0 18 18" style="flex-shrink:0;transform:rotate(-90deg)">
@@ -699,14 +713,12 @@
                 <span id="abaTimerText"
                     style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:700;color:#2563EB;">3:00</span>
             </div>
-
             <div id="abaSuccess"
                 style="display:none;padding:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:11px;margin-bottom:14px;">
                 <div style="font-size:24px;margin-bottom:5px;">✅</div>
                 <div style="font-size:14px;font-weight:700;color:#15803D;">Payment Confirmed!</div>
                 <div style="font-size:11px;color:var(--text-3);margin-top:3px;">Redirecting to receipt…</div>
             </div>
-
             <button onclick="closeAbaModal()"
                 style="width:100%;padding:10px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);
                    border-radius:9px;color:#DC2626;font-size:12.5px;font-weight:600;
@@ -718,9 +730,68 @@
         </div>
     </div>
 
+    {{-- ══════════════════════════════════════════════════════════
+     ADDED: CAMERA BARCODE SCANNER MODAL
+══════════════════════════════════════════════════════════ --}}
+    <div id="cameraBackdrop"
+        style="display:none;position:fixed;inset:0;background:rgba(10,15,35,.82);backdrop-filter:blur(14px);z-index:400;align-items:center;justify-content:center;padding:20px;">
+        <div
+            style="background:var(--panel);border:1px solid var(--border-2);border-radius:22px;width:100%;max-width:380px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.4);">
+            <div
+                style="padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div
+                        style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);">
+                        📷</div>
+                    <div>
+                        <div
+                            style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--text);">
+                            Camera Scanner</div>
+                        <div style="font-size:11px;color:var(--text-3);margin-top:1px;">Point camera at barcode</div>
+                    </div>
+                </div>
+                <button onclick="closeCameraScanner()"
+                    style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#EF4444;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+            </div>
+            <div style="padding:16px 16px 8px;">
+                <div style="position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:1;">
+                    <div id="qr-reader" style="width:100%;"></div>
+                    <div style="position:absolute;inset:0;pointer-events:none;z-index:10;">
+                        <div
+                            style="position:absolute;top:16px;left:16px;width:28px;height:28px;border-top:3px solid #3B82F6;border-left:3px solid #3B82F6;border-radius:3px 0 0 0;">
+                        </div>
+                        <div
+                            style="position:absolute;top:16px;right:16px;width:28px;height:28px;border-top:3px solid #3B82F6;border-right:3px solid #3B82F6;border-radius:0 3px 0 0;">
+                        </div>
+                        <div
+                            style="position:absolute;bottom:16px;left:16px;width:28px;height:28px;border-bottom:3px solid #3B82F6;border-left:3px solid #3B82F6;border-radius:0 0 0 3px;">
+                        </div>
+                        <div
+                            style="position:absolute;bottom:16px;right:16px;width:28px;height:28px;border-bottom:3px solid #3B82F6;border-right:3px solid #3B82F6;border-radius:0 0 3px 0;">
+                        </div>
+                        <div
+                            style="position:absolute;left:16px;right:16px;height:2px;background:linear-gradient(90deg,transparent,#3B82F6,transparent);top:50%;animation:scanLine 2s ease-in-out infinite;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="scanResult"
+                style="margin:0 16px 8px;padding:10px 14px;border-radius:10px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);font-size:12px;color:var(--text-3);text-align:center;min-height:38px;display:flex;align-items:center;justify-content:center;">
+                Waiting for barcode…</div>
+            <div style="padding:8px 16px 16px;">
+                <button onclick="closeCameraScanner()"
+                    style="width:100%;padding:10px;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:9px;color:#DC2626;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .18s;"
+                    onmouseover="this.style.background='rgba(239,68,68,.14)'"
+                    onmouseout="this.style.background='rgba(239,68,68,.07)'">Close Scanner</button>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
+    {{-- ADDED: html5-qrcode for camera barcode scanning --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
     <script>
         /* ─────────────────────────────── STATE ──────────────── */
         const POS = {
@@ -783,11 +854,18 @@
             setPayment('cash');
             document.getElementById('cashInput').addEventListener('input', calcChange);
             let st;
-            document.getElementById('search').addEventListener('keyup', function() {
+            document.getElementById('search').addEventListener('keyup', function(e) {
+                /* ADDED: Enter key = barcode lookup */
+                if (e.key === 'Enter') {
+                    const val = this.value.trim();
+                    if (val.length >= 3) findProductByBarcode(val);
+                    return;
+                }
                 clearTimeout(st);
                 st = setTimeout(() => {
                     fetch(
-                            `{{ route('admin.pos.search') }}?search=${encodeURIComponent(this.value)}`)
+                            `{{ route('admin.pos.search') }}?search=${encodeURIComponent(this.value)}`
+                            )
                         .then(r => r.json()).then(renderProducts);
                 }, 280);
             });
@@ -1264,6 +1342,102 @@
                 t.style.transition = 'all .2s';
                 setTimeout(() => t.remove(), 200);
             }, 2800);
+        }
+
+        /* ── ADDED: USB barcode scanner (Enter key) ──────────── */
+        function findProductByBarcode(barcode) {
+            fetch(`{{ route('admin.pos.findByBarcode') }}?barcode=${encodeURIComponent(barcode)}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.found) {
+                        addToCart(d.product.id);
+                        const s = document.getElementById('search');
+                        s.value = '';
+                        s.style.borderColor = 'rgba(34,197,94,.6)';
+                        s.style.background = 'rgba(34,197,94,.06)';
+                        s.style.boxShadow = '0 0 0 3px rgba(34,197,94,.1)';
+                        showToast('✅ ' + d.product.name + ' added to cart', 'success');
+                        setTimeout(() => {
+                            s.style.borderColor = '';
+                            s.style.background = 'var(--glass)';
+                            s.style.boxShadow = '';
+                        }, 800);
+                    } else {
+                        fetch(`{{ route('admin.pos.search') }}?search=${encodeURIComponent(barcode)}`)
+                            .then(r => r.json()).then(renderProducts);
+                        showToast('No product found for: ' + barcode, 'error');
+                    }
+                }).catch(() => {});
+        }
+
+        /* ── ADDED: Camera barcode scanner ───────────────────── */
+        let html5QrScanner = null;
+        let scanCooldown = false;
+
+        function openCameraScanner() {
+            document.getElementById('cameraBackdrop').style.display = 'flex';
+            const resultEl = document.getElementById('scanResult');
+            resultEl.textContent = 'Waiting for barcode…';
+            resultEl.style.color = 'var(--text-3)';
+            html5QrScanner = new Html5Qrcode('qr-reader');
+            html5QrScanner.start({
+                    facingMode: 'environment'
+                }, {
+                    fps: 10,
+                    qrbox: {
+                        width: 220,
+                        height: 120
+                    },
+                    aspectRatio: 1.0
+                },
+                (decodedText) => {
+                    if (scanCooldown) return;
+                    scanCooldown = true;
+                    resultEl.textContent = '🔍 Found: ' + decodedText;
+                    resultEl.style.color = '#3B82F6';
+                    fetch(`{{ route('admin.pos.findByBarcode') }}?barcode=${encodeURIComponent(decodedText)}`)
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.found) {
+                                resultEl.textContent = '✅ ' + d.product.name + ' — adding…';
+                                resultEl.style.color = '#22C55E';
+                                addToCart(d.product.id);
+                                setTimeout(() => {
+                                    closeCameraScanner();
+                                    showToast('✅ ' + d.product.name + ' added to cart', 'success');
+                                }, 700);
+                            } else {
+                                resultEl.textContent = '❌ No product found for: ' + decodedText;
+                                resultEl.style.color = '#EF4444';
+                                setTimeout(() => {
+                                    resultEl.textContent = 'Waiting for barcode…';
+                                    resultEl.style.color = 'var(--text-3)';
+                                    scanCooldown = false;
+                                }, 2000);
+                            }
+                        });
+                },
+                () => {}
+            ).catch(err => {
+                resultEl.textContent = '❌ Camera error: ' + err;
+                resultEl.style.color = '#EF4444';
+            });
+        }
+
+        function closeCameraScanner() {
+            if (html5QrScanner) {
+                html5QrScanner.stop()
+                    .then(() => {
+                        html5QrScanner.clear();
+                        html5QrScanner = null;
+                        scanCooldown = false;
+                    })
+                    .catch(() => {
+                        html5QrScanner = null;
+                        scanCooldown = false;
+                    });
+            }
+            document.getElementById('cameraBackdrop').style.display = 'none';
         }
     </script>
 @endpush

@@ -82,7 +82,7 @@
         padding: 11px 14px;
         font-size: 14px;
         font-family: 'DM Sans', sans-serif;
-        color: var(--text);
+        /* color: var(--text); */
         outline: none;
         transition: all 0.2s;
         width: 100%;
@@ -168,7 +168,7 @@
             <div class="field">
                 <label for="name" class="field-label">Category Name</label>
                 <input type="text" name="name" id="name"
-                       class="field-input {{ $errors->has('name') ? 'has-error' : '' }}"
+                       class="field-input text-gray-800 dark:text-white {{ $errors->has('name') ? 'has-error' : '' }}"
                        placeholder="e.g. Beverages, Snacks, Dairy..."
                        value="{{ old('name') }}"
                        autofocus required>

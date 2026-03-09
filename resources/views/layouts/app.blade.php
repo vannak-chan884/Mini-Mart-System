@@ -336,6 +336,15 @@
                     <span class="text-base w-5 text-center flex-shrink-0">📅</span>
                     Expense History
                 </a>
+                <a href="{{ route('admin.closing-reports.index') }}"
+                    class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
+                            text-[13.5px] font-medium transition-all duration-[180ms] relative
+                            {{ request()->routeIs('admin.closing-reports.*')
+                                ? 'bg-[rgba(0,48,135,0.1)] dark:bg-[rgba(0,48,135,0.25)] text-[#003087] dark:text-white border border-[rgba(0,48,135,0.2)] dark:border-[rgba(0,48,135,0.35)]'
+                                : 'text-[#6B7280] dark:text-[#9CA3AF] hover:bg-[rgba(0,48,135,0.06)] dark:hover:bg-white/[0.04] hover:text-[#003087] dark:hover:text-white border border-transparent' }}">
+                    <span class="text-base w-5 text-center flex-shrink-0">📊</span>
+                    Closing Reports
+                </a>
                 @endCanDo
 
                 {{-- ── ADMIN (admin role only) ─────────────── --}}
