@@ -185,7 +185,7 @@
                    relative z-50">
 
             {{-- Logo --}}
-            <a href="{{ route('admin.dashboard.index') }}"
+            <a href="{{ route('admin.dashboard') }}"
                 class="flex items-center gap-[11px] px-5 py-6
                        border-b border-black/[0.07] dark:border-white/[0.07]
                        no-underline flex-shrink-0">
@@ -217,7 +217,7 @@
                 @endCanDo
 
                 @canDo('dashboard.view')
-                <a href="{{ route('admin.dashboard.index') }}"
+                <a href="{{ route('admin.dashboard') }}"
                     class="nav-active-bar flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] no-underline
                            text-[13.5px] font-medium transition-all duration-[180ms] relative
                            {{ request()->routeIs('admin.dashboard.*')

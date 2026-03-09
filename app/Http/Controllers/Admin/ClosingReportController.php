@@ -20,7 +20,7 @@ class ClosingReportController extends Controller
             $query->where('type', $request->type);
         }
 
-        $reports = $query->paginate(15)->withQueryString();
+        $reports = $query->paginate(5)->withQueryString();
 
         return view('admin.closing-reports.index', compact('reports'));
     }

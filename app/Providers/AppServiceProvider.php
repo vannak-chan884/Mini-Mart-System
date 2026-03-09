@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Schema;
@@ -55,5 +56,8 @@ class AppServiceProvider extends ServiceProvider
         Blade::directive('endCannotDo', function () {
             return '<?php endif; ?>';
         });
+
+        Paginator::useTailwind(); // ← or useBootstrap() if you use Bootstrap
+
     }
 }

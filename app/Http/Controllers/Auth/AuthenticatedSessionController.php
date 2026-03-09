@@ -32,7 +32,7 @@ class AuthenticatedSessionController extends Controller
         // In store() after Auth::login():
         ActivityLogger::login();
 
-        return redirect()->intended(route('admin.dashboard.index', absolute: false));
+        return redirect()->intended(route('admin.dashboard', absolute: false));
     }
 
     /**

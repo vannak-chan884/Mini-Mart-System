@@ -10,6 +10,11 @@ class SaleController extends Controller
 {
     public function index(Request $request)
     {
+        // ✅ Block direct URL access if no permission
+        if (!auth()->user()->hasPermission('sales.view')) {
+            abort(403, 'You do not have permission to view sales.');
+        }
+        
         $query = Sale::with('items.product')->latest();
 
         // Search by invoice number
@@ -30,7 +35,7 @@ class SaleController extends Controller
             $query->whereDate('created_at', '<=', $request->to);
         }
 
-        $sales = $query->paginate(15)->withQueryString();
+        $sales = $query->paginate(6)->withQueryString();
 
         // Summary stats
         $stats = [
@@ -47,12 +52,20 @@ class SaleController extends Controller
 
     public function show(Sale $sale)
     {
+        if (!auth()->user()->hasPermission('sales.view')) {
+            abort(403);
+        }
+        
         $sale->load('items.product');
         return view('admin.sales.show', compact('sale'));
     }
 
     public function destroy(Sale $sale)
     {
+        if (!auth()->user()->hasPermission('sales.delete')) {
+            abort(403);
+        }
+        
         $sale->items()->delete();
         $sale->delete();
 

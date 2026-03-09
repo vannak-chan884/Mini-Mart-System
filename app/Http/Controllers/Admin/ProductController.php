@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category')->latest()->get();
+        $products = Product::with('category')
+        ->when($request->search, fn($q) => $q->where('name', 'like', "%{$request->search}%"))
+        ->latest()
+        ->paginate(8)
+        ->withQueryString(); // ← keeps ?search=xxx in pagination links
         return view('admin.products.index', compact('products'));
     }
 

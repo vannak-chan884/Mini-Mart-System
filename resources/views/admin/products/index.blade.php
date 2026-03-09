@@ -425,6 +425,11 @@
                 <a href="{{ route('admin.products.create') }}" class="btn-add">+ Add First Product</a>
             </div>
         @endif
+
+        {{-- Pagination --}}
+        <div class="px-5 py-4 border-t border-[rgba(0,0,0,0.05)] dark:border-[rgba(255,255,255,0.05)]">
+            {{ $products->links() }}
+        </div>
     </div>
 
 @endsection

@@ -29,7 +29,7 @@ class AbaPaywayService
         $amountStr       = number_format($amount, 2, '.', ''); // e.g. "1.00"
         $paymentOption   = 'abapay_khqr';
         $lifetime        = 30;
-        $qrImageTemplate = 'template2_color';
+        $qrImageTemplate = 'template1_color';
 
         // ── Hash field order per ABA docs ─────────────────────────────────
         // IMPORTANT: every field must be a string, empty fields = empty string
