@@ -57,7 +57,7 @@ class DashboardController extends Controller
             ->pluck('revenue', 'payment_method')
             ->toArray();
 
-        return view('admin.index', compact(
+        return view('admin.dashboard', compact(
             'todaySales',
             'todayRevenue',
             'totalSales',

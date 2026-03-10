@@ -392,10 +392,12 @@
                             </td>
                             <td class="right">
                                 <div class="action-wrap">
+                                    @canDo('categories.update')
                                     <a href="{{ route('admin.categories.edit', $category) }}"
                                         class="action-btn action-edit">
                                         ✏️ Edit
                                     </a>
+                                    @endCanDo
                                     @canDo('categories.delete')
                                     {{-- type="button" — never submits, never triggers loader --}}
                                     <button type="button" class="action-btn action-delete"

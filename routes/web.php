@@ -18,21 +18,18 @@ Route::get('/', function () {
     return view('index');
 });
 
-
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
-    // ── DASHBOARD ────────────────────────────────────────────────
-    Route::get('/', [DashboardController::class, 'dashboard'])
-        ->name('dashboard')
-        ->middleware('permission:dashboard.view');
+    // ── DASHBOARD (always visible to any logged-in admin) ────────
+    Route::get('dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
 
     // ── CATEGORIES ───────────────────────────────────────────────
-    Route::middleware('permission:categories.view')->group(function () {
-        Route::resource('categories', CategoryController::class);
-    });
+    Route::resource('categories', CategoryController::class)
+        ->middleware('permission:categories.view');
 
     // ── PRODUCTS ─────────────────────────────────────────────────
-    // Trash / restore / force-delete MUST come before resource()
+    // Custom routes MUST come before resource()
     Route::get('products/trash', [ProductController::class, 'trash'])
         ->name('products.trash')
         ->middleware('permission:products.view');
@@ -62,29 +59,66 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->middleware('permission:products.delete');
 
     // ── POS ──────────────────────────────────────────────────────
-    Route::middleware('permission:pos.view')->group(function () {
-        Route::get('pos', [PosController::class, 'index'])->name('pos.index');
-        Route::post('pos/add', [PosController::class, 'addToCart'])->name('pos.add');
-        Route::post('pos/update', [PosController::class, 'updateCart'])->name('pos.update');
-        Route::post('pos/remove', [PosController::class, 'removeFromCart'])->name('pos.remove');
-        Route::post('pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
-        Route::get('pos/find-by-barcode', [PosController::class, 'findByBarcode'])->name('pos.findByBarcode');
-        Route::get('pos-cart-data', fn () => response()->json(session('cart', [])));
-        Route::get('pos/search', [PosController::class, 'search'])->name('pos.search');
-        Route::get('pos/receipt/{sale}', [PosController::class, 'receipt'])->name('pos.receipt');
-        Route::post('pos/generate-khqr', [PosController::class, 'generateKhqr'])->name('pos.generateKhqr');
-        Route::post('pos/verify-khqr', [PosController::class, 'verifyKhqr'])->name('pos.verifyKhqr');
+    Route::get('pos', [PosController::class, 'index'])
+        ->name('pos.index')
+        ->middleware('permission:pos.view');
 
-        // ABA PayWay
-        Route::post('pos/payway/generate', [PosController::class, 'generatePayway'])->name('pos.payway.generate');
-        Route::get('pos/payway/callback', [PosController::class, 'paywayCallback'])->name('pos.payway.callback');
-        Route::post('pos/payway/verify', [PosController::class, 'verifyPayway'])->name('pos.payway.verify');
-    });
+    Route::post('pos/add', [PosController::class, 'addToCart'])
+        ->name('pos.add')
+        ->middleware('permission:pos.view');
+
+    Route::post('pos/update', [PosController::class, 'updateCart'])
+        ->name('pos.update')
+        ->middleware('permission:pos.view');
+
+    Route::post('pos/remove', [PosController::class, 'removeFromCart'])
+        ->name('pos.remove')
+        ->middleware('permission:pos.view');
+
+    Route::post('pos/checkout', [PosController::class, 'checkout'])
+        ->name('pos.checkout')
+        ->middleware('permission:pos.view');
+
+    Route::get('pos/find-by-barcode', [PosController::class, 'findByBarcode'])
+        ->name('pos.findByBarcode')
+        ->middleware('permission:pos.view');
+
+    Route::get('pos-cart-data', fn () => response()->json(session('cart', [])))
+        ->middleware('permission:pos.view');
+
+    Route::get('pos/search', [PosController::class, 'search'])
+        ->name('pos.search')
+        ->middleware('permission:pos.view');
+
+    Route::get('pos/receipt/{sale}', [PosController::class, 'receipt'])
+        ->name('pos.receipt')
+        ->middleware('permission:pos.view');
+
+    Route::post('pos/generate-khqr', [PosController::class, 'generateKhqr'])
+        ->name('pos.generateKhqr')
+        ->middleware('permission:pos.view');
+
+    Route::post('pos/verify-khqr', [PosController::class, 'verifyKhqr'])
+        ->name('pos.verifyKhqr')
+        ->middleware('permission:pos.view');
+
+    // ABA PayWay
+    Route::post('pos/payway/generate', [PosController::class, 'generatePayway'])
+        ->name('pos.payway.generate')
+        ->middleware('permission:pos.view');
+
+    Route::get('pos/payway/callback', [PosController::class, 'paywayCallback'])
+        ->name('pos.payway.callback')
+        ->middleware('permission:pos.view');
+
+    Route::post('pos/payway/verify', [PosController::class, 'verifyPayway'])
+        ->name('pos.payway.verify')
+        ->middleware('permission:pos.view');
 
     // ── SALES ────────────────────────────────────────────────────
-    Route::middleware('permission:sales.view')->group(function () {
-        Route::resource('sales', SaleController::class)->only(['index', 'show', 'destroy']);
-    });
+    Route::resource('sales', SaleController::class)
+        ->only(['index', 'show', 'destroy'])
+        ->middleware('permission:sales.view');
 
     // ── EXPENSES ─────────────────────────────────────────────────
     // Custom route MUST come before resource()
@@ -126,17 +160,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->middleware('permission:expense_categories.delete');
 
     // ── PERMISSIONS (admin only) ─────────────────────────────────
-    Route::middleware('permission:users.view')->group(function () {
-        Route::get('permissions', [RolePermissionController::class, 'index'])->name('permissions.index');
-        Route::post('permissions/update', [RolePermissionController::class, 'update'])->name('permissions.update');
-    });
+    Route::get('permissions', [RolePermissionController::class, 'index'])
+        ->name('permissions.index')
+        ->middleware('permission:users.view');
+
+    Route::post('permissions/update', [RolePermissionController::class, 'update'])
+        ->name('permissions.update')
+        ->middleware('permission:users.view');
 
     // ── USERS ────────────────────────────────────────────────────
-    Route::middleware('permission:users.view')->group(function () {
-        Route::get('users/{user}/permissions', [UserController::class, 'permissions'])->name('users.permissions');
-        Route::post('users/{user}/permissions', [UserController::class, 'updatePermissions'])->name('users.permissions.update');
-        Route::resource('users', UserController::class);
-    });
+    Route::get('users/{user}/permissions', [UserController::class, 'permissions'])
+        ->name('users.permissions')
+        ->middleware('permission:users.view');
+
+    Route::post('users/{user}/permissions', [UserController::class, 'updatePermissions'])
+        ->name('users.permissions.update')
+        ->middleware('permission:users.view');
+
+    Route::resource('users', UserController::class)
+        ->middleware('permission:users.view');
 
     // ── ACTIVITY LOGS ────────────────────────────────────────────
     Route::get('activity-logs', [ActivityLogController::class, 'index'])
@@ -144,12 +186,21 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->middleware('permission:users.view');
 
     // ── CLOSING REPORTS ──────────────────────────────────────────
-    Route::middleware('permission:expenses.view')->group(function () {
-        Route::get('closing-reports', [ClosingReportController::class, 'index'])->name('closing-reports.index');
-        Route::get('closing-reports/{closingReport}', [ClosingReportController::class, 'show'])->name('closing-reports.show');
-        Route::post('closing-reports/trigger', [ClosingReportController::class, 'trigger'])->name('closing-reports.trigger');
-        Route::post('closing-reports/{closingReport}/resend-telegram', [ClosingReportController::class, 'resendTelegram'])->name('closing-reports.resend-telegram');
-    });
+    Route::get('closing-reports', [ClosingReportController::class, 'index'])
+        ->name('closing-reports.index')
+        ->middleware('permission:expenses.view');
+
+    Route::get('closing-reports/{closingReport}', [ClosingReportController::class, 'show'])
+        ->name('closing-reports.show')
+        ->middleware('permission:expenses.view');
+
+    Route::post('closing-reports/trigger', [ClosingReportController::class, 'trigger'])
+        ->name('closing-reports.trigger')
+        ->middleware('permission:expenses.view');
+
+    Route::post('closing-reports/{closingReport}/resend-telegram', [ClosingReportController::class, 'resendTelegram'])
+        ->name('closing-reports.resend-telegram')
+        ->middleware('permission:expenses.view');
 
 });
 
