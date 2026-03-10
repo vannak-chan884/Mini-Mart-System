@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ExpenseResource;
 use App\Models\Expense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -34,15 +35,7 @@ class ExpenseController extends ApiController
 
         $expenses = $query->paginate($request->get('per_page', 15));
 
-        return response()->json([
-            'data'       => $expenses->items(),
-            'pagination' => [
-                'total'        => $expenses->total(),
-                'per_page'     => $expenses->perPage(),
-                'current_page' => $expenses->currentPage(),
-                'last_page'    => $expenses->lastPage(),
-            ],
-        ]);
+        return $this->paginated(ExpenseResource::collection($expenses));
     }
 
     // GET /api/expenses/{id}
@@ -50,7 +43,7 @@ class ExpenseController extends ApiController
     {
         $this->requirePermission($request, 'expenses.view');
         $expense->load('category', 'user');
-        return response()->json(['data' => $expense]);
+        return $this->success(new ExpenseResource($expense));
     }
 
     // POST /api/expenses
@@ -69,7 +62,7 @@ class ExpenseController extends ApiController
         $validated['user_id'] = $request->user()->id;
         $expense = Expense::create($validated);
 
-        return response()->json(['success' => true, 'data' => $expense], 201);
+        return $this->created(new ExpenseResource($expense->load('expenseCategory', 'user')), 'Expense created.');
     }
 
     // PUT /api/expenses/{id}
@@ -86,7 +79,7 @@ class ExpenseController extends ApiController
         ]);
 
         $expense->update($validated);
-        return response()->json(['success' => true, 'data' => $expense->fresh('category')]);
+        return $this->success(new ExpenseResource($expense->fresh('expenseCategory')), 'Expense updated.');
     }
 
     // DELETE /api/expenses/{id}
@@ -94,7 +87,7 @@ class ExpenseController extends ApiController
     {
         $this->requirePermission($request, 'expenses.delete');
         $expense->delete();
-        return response()->json(['success' => true, 'message' => 'Expense deleted.']);
+        return $this->success(null, 'Expense deleted.');
     }
 
     // GET /api/expenses/summary

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,21 +15,14 @@ class UserController extends ApiController
     {
         $this->requirePermission($request, 'users.view');
         $users = User::latest()->paginate($request->get('per_page', 15));
-        return response()->json([
-            'data'       => $users->items(),
-            'pagination' => [
-                'total'        => $users->total(),
-                'current_page' => $users->currentPage(),
-                'last_page'    => $users->lastPage(),
-            ],
-        ]);
+        return $this->paginated(UserResource::collection($users));
     }
 
     // GET /api/users/{id}
     public function show(Request $request, User $user)
     {
         $this->requirePermission($request, 'users.view');
-        return response()->json(['data' => $user]);
+        return $this->success(new UserResource($user));
     }
 
     // POST /api/users
@@ -43,7 +37,7 @@ class UserController extends ApiController
         ]);
         $validated['password'] = Hash::make($validated['password']);
         $user = User::create($validated);
-        return response()->json(['success' => true, 'data' => $user], 201);
+        return $this->created(new UserResource($user), 'User created.');
     }
 
     // PUT /api/users/{id}
@@ -62,7 +56,7 @@ class UserController extends ApiController
             unset($validated['password']);
         }
         $user->update($validated);
-        return response()->json(['success' => true, 'data' => $user->fresh()]);
+        return $this->success(new UserResource($user->fresh()), 'User updated.');
     }
 
     // DELETE /api/users/{id}
@@ -73,7 +67,7 @@ class UserController extends ApiController
             return response()->json(['error' => 'Cannot delete your own account.'], 422);
         }
         $user->delete();
-        return response()->json(['success' => true]);
+        return $this->success(null, 'User deleted.');
     }
 
     // GET /api/users/me/permissions

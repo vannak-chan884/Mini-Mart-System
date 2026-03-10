@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
@@ -12,14 +13,14 @@ class CategoryController extends ApiController
     public function index()
     {
         $categories = Category::withCount('products')->latest()->get();
-        return response()->json(['data' => $categories]);
+        return $this->success(CategoryResource::collection($categories));
     }
 
     // GET /api/categories/{id}
     public function show(Category $category)
     {
         $category->loadCount('products');
-        return response()->json(['data' => $category]);
+        return $this->success(new CategoryResource($category));
     }
 
     // POST /api/categories
@@ -33,7 +34,7 @@ class CategoryController extends ApiController
         ]);
 
         $category = Category::create($validated);
-        return response()->json(['success' => true, 'data' => $category], 201);
+        return $this->created(new CategoryResource($category), 'Category created.');
     }
 
     // PUT /api/categories/{id}
@@ -47,7 +48,7 @@ class CategoryController extends ApiController
         ]);
 
         $category->update($validated);
-        return response()->json(['success' => true, 'data' => $category]);
+        return $this->success(new CategoryResource($category), 'Category updated.');
     }
 
     // DELETE /api/categories/{id}
@@ -55,7 +56,7 @@ class CategoryController extends ApiController
     {
         $this->requirePermission($request, 'categories.view');
         $category->delete();
-        return response()->json(['success' => true, 'message' => 'Category deleted.']);
+        return $this->success(null, 'Category deleted.');
     }
 
     private function requirePermission(Request $request, string $permission): void

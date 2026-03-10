@@ -31,15 +31,9 @@ class AuthController extends ApiController
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'token'   => $token,
-            'user'    => [
-                'id'    => $user->id,
-                'name'  => $user->name,
-                'email' => $user->email,
-                'role'  => $user->role,
-            ],
+        return $this->success([
+            'token' => $token,
+            'user'  => new \App\Http\Resources\UserResource($user),
         ]);
     }
 
@@ -56,14 +50,7 @@ class AuthController extends ApiController
     {
         $user = $request->user();
 
-        return response()->json([
-            'id'          => $user->id,
-            'name'        => $user->name,
-            'email'       => $user->email,
-            'role'        => $user->role,
-            'permissions' => $user->cachedPermissions(),
-            'created_at'  => $user->created_at,
-        ]);
+        return $this->success(new \App\Http\Resources\UserResource($user->load([])));
     }
 
     // POST /api/auth/refresh  — revoke current token, issue a new one

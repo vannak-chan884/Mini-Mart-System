@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\SaleResource;
 use App\Models\Sale;
 use Illuminate\Http\Request;
 
@@ -34,19 +35,7 @@ class SaleController extends ApiController
         $perPage = $request->get('per_page', 15);
         $sales   = $query->paginate($perPage);
 
-        return response()->json([
-            'data'       => $sales->items(),
-            'pagination' => [
-                'total'        => $sales->total(),
-                'per_page'     => $sales->perPage(),
-                'current_page' => $sales->currentPage(),
-                'last_page'    => $sales->lastPage(),
-            ],
-            'summary' => [
-                'total_revenue' => (float) Sale::sum('total_amount'),
-                'total_sales'   => Sale::count(),
-            ],
-        ]);
+        return $this->paginated(SaleResource::collection($sales), 'Sales loaded.');
     }
 
     // GET /api/sales/{id}
@@ -54,36 +43,7 @@ class SaleController extends ApiController
     {
         $this->requirePermission($request, 'sales.view');
         $sale->load('items.product', 'user');
-        return response()->json(['data' => $sale]);
-    }
-
-    // DELETE /api/sales/{id}
-    public function destroy(Request $request, Sale $sale)
-    {
-        $this->requirePermission($request, 'sales.view');
-        $sale->delete();
-        return response()->json(['success' => true, 'message' => 'Sale deleted.']);
-    }
-
-    // GET /api/sales/export
-    public function export(Request $request)
-    {
-        $this->requirePermission($request, 'sales.view');
-
-        $sales = Sale::with('items.product', 'user')
-            ->when($request->date_from, fn($q) => $q->whereDate('created_at', '>=', $request->date_from))
-            ->when($request->date_to,   fn($q) => $q->whereDate('created_at', '<=', $request->date_to))
-            ->latest()
-            ->get();
-
-        return response()->json(['data' => $sales]);
-    }
-
-    private function requirePermission(Request $request, string $permission): void
-    {
-        if (!$request->user()->canDo($permission)) {
-            abort(response()->json(['error' => 'Permission denied.'], 403));
-        }
+        return $this->success(new SaleResource($sale));
     }
 
     /**
@@ -184,15 +144,11 @@ class SaleController extends ApiController
             // ── Load sale with items for response ────────────────────
             $sale->load('items.product:id,name,barcode');
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Sale completed successfully.',
-                'data'    => [
-                    'sale'          => $sale,
-                    'change_amount' => $changeAmount,
-                    'invoice_no'    => $invoiceNo,
-                ],
-            ], 201);
+            return $this->created([
+                'sale'          => new SaleResource($sale),
+                'change_amount' => $changeAmount,
+                'invoice_no'    => $invoiceNo,
+            ], 'Sale completed successfully.');
 
         } catch (\Exception $e) {
             \DB::rollBack();
@@ -200,6 +156,35 @@ class SaleController extends ApiController
                 'success' => false,
                 'message' => 'Sale failed: ' . $e->getMessage(),
             ], 500);
+        }
+    }
+
+    // DELETE /api/sales/{id}
+    public function destroy(Request $request, Sale $sale)
+    {
+        $this->requirePermission($request, 'sales.view');
+        $sale->delete();
+        return $this->success(null, 'Sale deleted.');
+    }
+
+    // GET /api/sales/export
+    public function export(Request $request)
+    {
+        $this->requirePermission($request, 'sales.view');
+
+        $sales = Sale::with('items.product', 'user')
+            ->when($request->date_from, fn($q) => $q->whereDate('created_at', '>=', $request->date_from))
+            ->when($request->date_to,   fn($q) => $q->whereDate('created_at', '<=', $request->date_to))
+            ->latest()
+            ->get();
+
+        return $this->success(SaleResource::collection($sales));
+    }
+
+    private function requirePermission(Request $request, string $permission): void
+    {
+        if (!$request->user()->canDo($permission)) {
+            abort(response()->json(['error' => 'Permission denied.'], 403));
         }
     }
 }
