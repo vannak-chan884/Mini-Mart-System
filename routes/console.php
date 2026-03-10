@@ -1,6 +1,18 @@
 <?php
 
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+
+Artisan::command('inspire', function () {
+    $this->comment(Inspiring::quote());
+})->purpose('Display an inspiring quote');
+
+// ── Auto-renew Bakong token daily at 8:00 AM ─────────────────────────
+Schedule::command('bakong:renew-token')->dailyAt('08:00');
+
+// ── Optional: Closing report every day at 11:00 PM ───────────────────
+// Schedule::command('report:closing')->dailyAt('23:00');
 
 // ── Daily closing at 7:00 PM Cambodia time ────────────────────────────────────
 Schedule::command('closing:daily')

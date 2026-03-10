@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Dedoc\Scramble\Scramble;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Blade;
@@ -59,5 +61,12 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useTailwind(); // ← or useBootstrap() if you use Bootstrap
 
+        // Only admin can view API docs
+        // Protect API docs — only admin can view
+        Gate::define('viewApiDocs', function ($user) {
+            return $user->role === 'admin';
+        });
+
+        Scramble::afterOpenApiGenerated(function () {});
     }
 }
