@@ -13,7 +13,9 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::latest()->paginate(10);
+        // ✅ After — only admin + cashier
+        $users = User::whereIn('role', ['admin', 'cashier'])->latest()->paginate(10);
+        // $users = User::latest()->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 

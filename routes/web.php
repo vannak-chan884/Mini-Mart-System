@@ -43,7 +43,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->middleware('permission:products.delete');
 
     Route::resource('products', ProductController::class)
-        ->only(['index', 'show'])
+        ->only(['index'])
         ->middleware('permission:products.view');
 
     Route::resource('products', ProductController::class)

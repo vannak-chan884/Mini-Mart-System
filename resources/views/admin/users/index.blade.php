@@ -105,16 +105,24 @@
                                     @if ($user->role === 'admin')
                                         <span
                                             class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1
-                                                 rounded-full bg-gradient-to-r from-[#003087] to-[#1a4db3] text-white">
+         rounded-full bg-gradient-to-r from-[#003087] to-[#1a4db3] text-white">
                                             🛡️ Admin
+                                        </span>
+                                    @elseif ($user->role === 'cashier')
+                                        <span
+                                            class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1
+         rounded-full bg-amber-100 dark:bg-amber-900/30
+         text-amber-700 dark:text-amber-400
+         border border-amber-200 dark:border-amber-800">
+                                            🧑‍💼 Cashier
                                         </span>
                                     @else
                                         <span
                                             class="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1
-                                                 rounded-full bg-amber-100 dark:bg-amber-900/30
-                                                 text-amber-700 dark:text-amber-400
-                                                 border border-amber-200 dark:border-amber-800">
-                                            🧑‍💼 Cashier
+         rounded-full bg-green-100 dark:bg-green-900/30
+         text-green-700 dark:text-green-400
+         border border-green-200 dark:border-green-800">
+                                            🛒 Customer
                                         </span>
                                     @endif
                                 </td>

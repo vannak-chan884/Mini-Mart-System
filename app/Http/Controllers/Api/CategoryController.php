@@ -12,7 +12,8 @@ class CategoryController extends ApiController
     // GET /api/categories
     public function index()
     {
-        $categories = Category::withCount('products')->latest()->get();
+        // $categories = Category::withCount('products')->latest()->get();
+        $categories = Category::all();
         return $this->success(CategoryResource::collection($categories));
     }
 

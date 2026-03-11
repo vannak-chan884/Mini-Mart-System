@@ -37,6 +37,31 @@ class AuthController extends ApiController
         ]);
     }
 
+    // POST /api/auth/register
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => \Hash::make($request->password),
+            'role'     => 'customer',
+        ]);
+
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        // ✅ Same structure as login
+        return $this->created([
+            'token' => $token,
+            'user'  => new \App\Http\Resources\UserResource($user),
+        ], 'Registered successfully.');
+    }
+
     // POST /api/auth/logout
     public function logout(Request $request)
     {
@@ -96,5 +121,21 @@ class AuthController extends ApiController
             'success' => true,
             'message' => 'Password changed successfully. Please login again.',
         ]);
+    }
+
+    // DELETE /api/auth/account
+    public function deleteAccount(Request $request)
+    {
+        $request->validate(['password' => 'required|string']);
+
+        if (!\Hash::check($request->password, $request->user()->password)) {
+            return $this->error('Incorrect password.', 422);
+        }
+
+        $user = $request->user();
+        $user->tokens()->delete();
+        $user->delete();
+
+        return $this->success(null, 'Account deleted successfully.');
     }
 }

@@ -21,7 +21,8 @@ class ProductController extends ApiController
                 'destroy' => 'products.delete',
             ];
 
-            if (isset($map[$action]) && !$request->user()->canDo($map[$action])) {
+            // ✅ Only check permission if user is authenticated
+            if (isset($map[$action]) && $request->user() && !$request->user()->canDo($map[$action])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Permission denied.',

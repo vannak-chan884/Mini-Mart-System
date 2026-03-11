@@ -13,31 +13,45 @@ use App\Http\Controllers\Api\UserController;
 
 // ── Authentication (public) ──────────────────────────────────────────
 Route::prefix('auth')->group(function () {
-    Route::post('login',   [AuthController::class, 'login'])
-        ->middleware('throttle:5,1'); // rate limit: 5 attempts per minute
-    Route::post('logout',  [AuthController::class, 'logout'])->middleware('auth:sanctum');
-    Route::get('me',       [AuthController::class, 'me'])->middleware('auth:sanctum');
-    Route::post('refresh', [AuthController::class, 'refresh'])->middleware('auth:sanctum');
-    Route::put('password', [AuthController::class, 'changePassword'])->middleware('auth:sanctum'); // NEW
+    Route::post('login',    [AuthController::class, 'login'])
+        ->middleware('throttle:5,1');
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('logout',   [AuthController::class, 'logout'])->middleware('auth:sanctum');
+    Route::get('me',        [AuthController::class, 'me'])->middleware('auth:sanctum');
+    Route::post('refresh',  [AuthController::class, 'refresh'])->middleware('auth:sanctum');
+    Route::put('password',  [AuthController::class, 'changePassword'])->middleware('auth:sanctum');
 });
 
-// ── All authenticated routes ─────────────────────────────────────────
+// ── PUBLIC routes — no token needed ─────────────────────────────────
+Route::get('products/low-stock', [ProductController::class, 'lowStock']);
+Route::get('products/search',    [ProductController::class, 'search']);
+Route::get('products/{product}', [ProductController::class, 'show']);
+Route::get('products',           [ProductController::class, 'index']);
+
+Route::get('categories/{category}', [CategoryController::class, 'show']);
+Route::get('categories',            [CategoryController::class, 'index']);
+
+// ── Authenticated routes — token required ────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
 
     // Dashboard
     Route::get('dashboard', [DashboardController::class, 'index']);
 
-    // Products
-    Route::get('products/low-stock', [ProductController::class, 'lowStock']);
-    Route::get('products/search',    [ProductController::class, 'search']);
-    Route::apiResource('products',   ProductController::class);
+    // Products (write operations only — read is public above)
+    Route::post('products',            [ProductController::class, 'store']);
+    Route::put('products/{product}',   [ProductController::class, 'update']);
+    Route::patch('products/{product}', [ProductController::class, 'update']);
+    Route::delete('products/{product}',[ProductController::class, 'destroy']);
 
-    // Categories
-    Route::apiResource('categories', CategoryController::class);
+    // Categories (write operations only)
+    Route::post('categories',              [CategoryController::class, 'store']);
+    Route::put('categories/{category}',    [CategoryController::class, 'update']);
+    Route::patch('categories/{category}',  [CategoryController::class, 'update']);
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
 
     // POS
     Route::prefix('pos')->group(function () {
-        Route::get('products',              [PosController::class, 'products']);    // NEW — lightweight
+        Route::get('products',              [PosController::class, 'products']);
         Route::get('cart',                  [PosController::class, 'cart']);
         Route::post('cart/add',             [PosController::class, 'addToCart']);
         Route::post('cart/update',          [PosController::class, 'updateCart']);
@@ -49,8 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Sales
-    Route::post('sales',       [SaleController::class, 'store']);     // NEW — direct sale
-    Route::get('sales/export', [SaleController::class, 'export']);
+    Route::post('sales',        [SaleController::class, 'store']);
+    Route::get('sales/export',  [SaleController::class, 'export']);
     Route::apiResource('sales', SaleController::class)->except(['store', 'create', 'edit']);
 
     // Expenses
@@ -63,7 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Users
     Route::get('users/me/permissions',      [UserController::class, 'myPermissions']);
-    Route::get('users/{user}/permissions',  [UserController::class, 'permissions']);       // NEW
-    Route::put('users/{user}/permissions',  [UserController::class, 'updatePermissions']); // NEW
+    Route::get('users/{user}/permissions',  [UserController::class, 'permissions']);
+    Route::put('users/{user}/permissions',  [UserController::class, 'updatePermissions']);
     Route::apiResource('users',             UserController::class);
+
+    Route::delete('auth/account', [AuthController::class, 'deleteAccount']);
 });
