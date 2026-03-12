@@ -11,7 +11,7 @@ class SaleController extends Controller
     public function index(Request $request)
     {
         // ✅ Block direct URL access if no permission
-        if (!auth()->user()->hasPermission('sales.view')) {
+        if (!auth()->user()->canDo('sales.view')) {
             abort(403, 'You do not have permission to view sales.');
         }
         
@@ -52,7 +52,7 @@ class SaleController extends Controller
 
     public function show(Sale $sale)
     {
-        if (!auth()->user()->hasPermission('sales.view')) {
+        if (!auth()->user()->canDo('sales.view')) {
             abort(403);
         }
         
@@ -62,7 +62,7 @@ class SaleController extends Controller
 
     public function destroy(Sale $sale)
     {
-        if (!auth()->user()->hasPermission('sales.delete')) {
+        if (!auth()->user()->canDo('sales.delete')) {
             abort(403);
         }
         

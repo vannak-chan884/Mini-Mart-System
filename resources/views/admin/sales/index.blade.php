@@ -532,10 +532,12 @@
                                         style="background:rgba(22,163,74,0.15);border-color:rgba(22,163,74,0.3);color:#86EFAC;">
                                         🖨️ Receipt
                                     </a>
-                                    <form method="POST" action="{{ route('admin.sales.destroy', $sale) }}"
-                                        onsubmit="return confirm('Delete this sale? This cannot be undone.')">
+                                    <form method="POST" action="{{ route('admin.sales.destroy', $sale) }}">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="action-btn action-delete">🗑</button>
+                                        <button type="submit" class="action-btn action-delete"
+                                            onclick="return confirm('Delete this sale? This cannot be undone.')">
+                                            🗑
+                                        </button>
                                     </form>
                                 </div>
                             </td>

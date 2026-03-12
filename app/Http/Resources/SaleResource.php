@@ -1,30 +1,72 @@
 <?php
 
 namespace App\Http\Resources;
-use Illuminate\Http\Request;
+
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SaleResource extends JsonResource
 {
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
-            'id'             => $this->id,
-            'invoice_no'     => $this->invoice_no,
-            'total_amount'   => (float) $this->total_amount,
-            'paid_amount'    => (float) $this->paid_amount,
-            'change_amount'  => (float) $this->change_amount,
-            'payment_method' => $this->payment_method,
-            'payment_label'  => match($this->payment_method) {
-                'cash'      => 'Cash 💵',
-                'khqr_usd'  => 'KHQR USD 🇺🇸',
-                'khqr_khr'  => 'KHQR KHR 🇰🇭',
-                default     => $this->payment_method,
-            },
-            'cashier'        => new UserResource($this->whenLoaded('user')),
-            'items'          => SaleItemResource::collection($this->whenLoaded('items')),
-            'items_count'    => $this->whenCounted('items'),
-            'created_at'     => $this->created_at?->format('d M Y H:i'),
+            'id'                 => $this->id,
+            'invoice_no'         => $this->invoice_no,
+            'total_amount'       => $this->total_amount,
+            'paid_amount'        => $this->paid_amount,
+            'change_amount'      => $this->change_amount,
+            'payment_method'     => $this->payment_method,
+            'payment_method_label' => $this->paymentMethodLabel(),
+
+            // COD status fields
+            'status'             => $this->status,
+            'status_label'       => $this->statusLabel(),
+            'notes'              => $this->notes,
+            'payment_reference'  => $this->payment_reference,
+            'payment_proof_url'  => $this->payment_proof_url, // via accessor
+
+            // Confirmation info
+            'confirmed_at'       => $this->confirmed_at?->toISOString(),
+            'confirmed_by'       => $this->confirmedBy ? [
+                'id'   => $this->confirmedBy->id,
+                'name' => $this->confirmedBy->name,
+            ] : null,
+
+            // Bakong
+            'bakong_hash'        => $this->bakong_hash,
+            'aba_tran_id'        => $this->aba_tran_id,
+
+            // Relations
+            'user'               => $this->user ? [
+                'id'    => $this->user->id,
+                'name'  => $this->user->name,
+                'email' => $this->user->email,
+            ] : null,
+            'items'              => SaleItemResource::collection($this->whenLoaded('items')),
+
+            'created_at'         => $this->created_at->toISOString(),
+            'updated_at'         => $this->updated_at->toISOString(),
         ];
+    }
+
+    private function paymentMethodLabel(): string
+    {
+        return match($this->payment_method) {
+            'cash'      => '💵 Cash on Delivery',
+            'khqr'      => '🏦 KHQR Bakong',
+            'khqr_usd'  => '🏦 KHQR USD',
+            'khqr_khr'  => '🏦 KHQR KHR',
+            default     => $this->payment_method,
+        };
+    }
+
+    private function statusLabel(): string
+    {
+        return match($this->status) {
+            'pending'    => '🟡 Pending',
+            'delivering' => '🔵 Delivering',
+            'paid'       => '🟢 Paid',
+            'cancelled'  => '🔴 Cancelled',
+            default      => $this->status,
+        };
     }
 }
