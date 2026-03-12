@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class Sale extends Model
 {
@@ -16,7 +15,8 @@ class Sale extends Model
         'paid_amount',
         'change_amount',
         'payment_method',
-        'status',
+        'status',           // payment status:  pending | delivering | paid | cancelled
+        'delivery_status',  // delivery status: pending | delivering | delivered
         'notes',
         'bakong_hash',
         'aba_tran_id',
@@ -27,10 +27,10 @@ class Sale extends Model
     ];
 
     protected $casts = [
-        'confirmed_at' => 'datetime',
-        'total_amount' => 'decimal:2',
-        'paid_amount'  => 'decimal:2',
-        'change_amount'=> 'decimal:2',
+        'confirmed_at'  => 'datetime',
+        'total_amount'  => 'decimal:2',
+        'paid_amount'   => 'decimal:2',
+        'change_amount' => 'decimal:2',
     ];
 
     public function user(): BelongsTo
@@ -48,7 +48,6 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class);
     }
 
-    // Return full URL for payment proof photo
     public function getPaymentProofUrlAttribute(): ?string
     {
         return $this->payment_proof

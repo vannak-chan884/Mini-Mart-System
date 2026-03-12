@@ -63,19 +63,23 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Sales
-    Route::post  ('sales',               [SaleController::class, 'store']);
-    Route::get   ('sales',               [SaleController::class, 'index']);
-    Route::get   ('sales/export',        [SaleController::class, 'export']);
-
-    // ✅ MUST be before sales/{sale}
-    Route::post  ('sales/{sale}/status', [SaleController::class, 'updateStatus']);
-    Route::patch ('sales/{sale}/status', [SaleController::class, 'updateStatus']);
-
-    // These come AFTER
-    Route::get   ('sales/{sale}',        [SaleController::class, 'show']);
-    Route::put   ('sales/{sale}',        [SaleController::class, 'update']);
-    Route::patch ('sales/{sale}',        [SaleController::class, 'update']);
-    Route::delete('sales/{sale}',        [SaleController::class, 'destroy']);
+    Route::post  ('sales',                  [SaleController::class, 'store']);
+    Route::get   ('sales/export',           [SaleController::class, 'export']);
+    
+    // ✅ Specific routes BEFORE wildcard {sale}
+    Route::post  ('sales/{sale}/status',    [SaleController::class, 'updateStatus']);
+    Route::patch ('sales/{sale}/status',    [SaleController::class, 'updateStatus']);
+    
+    // NEW: delivery status — works for ALL orders (cash + KHQR)
+    Route::post  ('sales/{sale}/delivery',  [SaleController::class, 'updateDelivery']);
+    Route::patch ('sales/{sale}/delivery',  [SaleController::class, 'updateDelivery']);
+    
+    // Wildcard routes AFTER
+    Route::get   ('sales',                  [SaleController::class, 'index']);
+    Route::get   ('sales/{sale}',           [SaleController::class, 'show']);
+    Route::put   ('sales/{sale}',           [SaleController::class, 'update']);
+    Route::patch ('sales/{sale}',           [SaleController::class, 'update']);
+    Route::delete('sales/{sale}',           [SaleController::class, 'destroy']);
 
     // Expenses
     Route::get('expenses/summary', [ExpenseController::class, 'summary']);

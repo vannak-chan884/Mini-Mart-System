@@ -15,14 +15,19 @@ class SaleResource extends JsonResource
             'paid_amount'        => $this->paid_amount,
             'change_amount'      => $this->change_amount,
             'payment_method'     => $this->payment_method,
-            'payment_method_label' => $this->paymentMethodLabel(),
 
-            // COD status fields
+            // Payment status (cash: pending→paid, khqr: paid immediately)
             'status'             => $this->status,
             'status_label'       => $this->statusLabel(),
+
+            // Delivery status (ALL orders: pending→delivering→delivered)
+            'delivery_status'    => $this->delivery_status,
+            'delivery_status_label' => $this->deliveryStatusLabel(),
+
+            // Notes & proof
             'notes'              => $this->notes,
             'payment_reference'  => $this->payment_reference,
-            'payment_proof_url'  => $this->payment_proof_url, // via accessor
+            'payment_proof_url'  => $this->payment_proof_url,
 
             // Confirmation info
             'confirmed_at'       => $this->confirmed_at?->toISOString(),
@@ -48,17 +53,6 @@ class SaleResource extends JsonResource
         ];
     }
 
-    private function paymentMethodLabel(): string
-    {
-        return match($this->payment_method) {
-            'cash'      => '💵 Cash on Delivery',
-            'khqr'      => '🏦 KHQR Bakong',
-            'khqr_usd'  => '🏦 KHQR USD',
-            'khqr_khr'  => '🏦 KHQR KHR',
-            default     => $this->payment_method,
-        };
-    }
-
     private function statusLabel(): string
     {
         return match($this->status) {
@@ -67,6 +61,16 @@ class SaleResource extends JsonResource
             'paid'       => '🟢 Paid',
             'cancelled'  => '🔴 Cancelled',
             default      => $this->status,
+        };
+    }
+
+    private function deliveryStatusLabel(): string
+    {
+        return match($this->delivery_status) {
+            'pending'    => '📦 Preparing',
+            'delivering' => '🚚 Out for Delivery',
+            'delivered'  => '✅ Delivered',
+            default      => $this->delivery_status ?? 'pending',
         };
     }
 }

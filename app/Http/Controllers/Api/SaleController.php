@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Resources\SaleResource;
 use App\Models\Sale;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,11 +20,12 @@ class SaleController extends ApiController
             $query->where('user_id', $user->id);
         } else {
             $this->requirePermission($request, 'sales.view');
-            if ($request->filled('search'))         $query->where('invoice_no', 'like', "%{$request->search}%");
-            if ($request->filled('payment_method')) $query->where('payment_method', $request->payment_method);
-            if ($request->filled('status'))         $query->where('status', $request->status);
-            if ($request->filled('date_from'))      $query->whereDate('created_at', '>=', $request->date_from);
-            if ($request->filled('date_to'))        $query->whereDate('created_at', '<=', $request->date_to);
+            if ($request->filled('search'))          $query->where('invoice_no', 'like', "%{$request->search}%");
+            if ($request->filled('payment_method'))  $query->where('payment_method', $request->payment_method);
+            if ($request->filled('status'))          $query->where('status', $request->status);
+            if ($request->filled('delivery_status')) $query->where('delivery_status', $request->delivery_status);
+            if ($request->filled('date_from'))       $query->whereDate('created_at', '>=', $request->date_from);
+            if ($request->filled('date_to'))         $query->whereDate('created_at', '<=', $request->date_to);
         }
 
         $sales = $query->paginate($request->get('per_page', 15));
@@ -67,23 +69,33 @@ class SaleController extends ApiController
 
                 if ($product->stock < $item['quantity']) {
                     \DB::rollBack();
-                    return response()->json(['success' => false,
-                        'message' => "Insufficient stock for: {$product->name}. Available: {$product->stock}"], 422);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Insufficient stock for: {$product->name}. Available: {$product->stock}",
+                    ], 422);
                 }
 
                 $lineTotal    = $product->sell_price * $item['quantity'];
                 $totalAmount += $lineTotal;
-                $saleItems[] = ['product' => $product, 'quantity' => $item['quantity'],
-                                'price' => $product->sell_price, 'total' => $lineTotal];
+                $saleItems[]  = [
+                    'product'  => $product,
+                    'quantity' => $item['quantity'],
+                    'price'    => $product->sell_price,
+                    'total'    => $lineTotal,
+                ];
             }
 
-            $paidAmount   = $request->payment_method === 'cash' ? (float)$request->paid_amount : $totalAmount;
+            $paidAmount   = $request->payment_method === 'cash'
+                ? (float) $request->paid_amount
+                : $totalAmount;
             $changeAmount = max(0, $paidAmount - $totalAmount);
 
             if ($request->payment_method === 'cash' && $paidAmount < $totalAmount) {
                 \DB::rollBack();
-                return response()->json(['success' => false,
-                    'message' => "Insufficient payment. Total is \${$totalAmount}, paid \${$paidAmount}."], 422);
+                return response()->json([
+                    'success' => false,
+                    'message' => "Insufficient payment. Total is \${$totalAmount}, paid \${$paidAmount}.",
+                ], 422);
             }
 
             // Invoice number
@@ -91,23 +103,24 @@ class SaleController extends ApiController
             $nextId    = $lastSale ? $lastSale->id + 1 : 1;
             $invoiceNo = 'INV-' . now()->format('Ymd') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
-            // ── Status logic ─────────────────────────────────────────────
-            // Cash on delivery  → pending (admin/cashier confirms after delivery)
-            // KHQR              → paid    (payment already verified before store() is called)
-            $isCash   = $request->payment_method === 'cash';
-            $status   = $isCash ? 'pending' : 'paid';
+            // ── Status logic ──────────────────────────────────────────────
+            // Payment status:  cash → pending, KHQR → paid immediately
+            // Delivery status: ALL orders start as 'pending'
+            $isCash = $request->payment_method === 'cash';
+            $status = $isCash ? 'pending' : 'paid';
 
             $sale = Sale::create([
-                'invoice_no'     => $invoiceNo,
-                'user_id'        => auth()->id(),
-                'total_amount'   => $totalAmount,
-                'paid_amount'    => $paidAmount,
-                'change_amount'  => $changeAmount,
-                'payment_method' => $request->payment_method,
-                'status'         => $status,
-                'notes'          => $request->notes,
-                'confirmed_at'   => $isCash ? null : now(),
-                'confirmed_by'   => $isCash ? null : auth()->id(),
+                'invoice_no'      => $invoiceNo,
+                'user_id'         => auth()->id(),
+                'total_amount'    => $totalAmount,
+                'paid_amount'     => $paidAmount,
+                'change_amount'   => $changeAmount,
+                'payment_method'  => $request->payment_method,
+                'status'          => $status,
+                'delivery_status' => 'pending', // ALL orders start pending delivery
+                'notes'           => $request->notes,
+                'confirmed_at'    => $isCash ? null : now(),
+                'confirmed_by'    => $isCash ? null : auth()->id(),
             ]);
 
             foreach ($saleItems as $item) {
@@ -122,21 +135,33 @@ class SaleController extends ApiController
 
             \DB::commit();
             $sale->load('items.product', 'user', 'confirmedBy');
+
+            // Telegram notification for new order
+            try {
+                if ($isCash) {
+                    app(TelegramService::class)->notifyNewOrder($sale);
+                } else {
+                    app(TelegramService::class)->notifyNewKhqrOrder($sale);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Telegram notification failed: ' . $e->getMessage());
+            }
+
             return $this->created(new SaleResource($sale), 'Sale completed successfully.');
 
         } catch (\Exception $e) {
             \DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'Sale failed: ' . $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Sale failed: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
-    // PATCH /api/sales/{id}/status  ← NEW
-    // Admin or cashier updates COD order status + uploads payment proof
+    // POST|PATCH /api/sales/{id}/status — update PAYMENT status
     public function updateStatus(Request $request, Sale $sale)
     {
         $this->requirePermission($request, 'sales.view');
-
-        $request->merge($request->json()->all() ?: []);
 
         $request->validate([
             'status'            => 'required|in:pending,delivering,paid,cancelled',
@@ -151,7 +176,6 @@ class SaleController extends ApiController
         }
 
         if ($request->hasFile('payment_proof')) {
-            // Delete old proof if it exists
             if ($sale->payment_proof) {
                 Storage::disk('public')->delete($sale->payment_proof);
             }
@@ -159,13 +183,11 @@ class SaleController extends ApiController
                 ->store('payment_proofs', 'public');
         }
 
-        // Mark confirmed when moving to paid
         if ($request->status === 'paid') {
             $data['confirmed_by'] = $request->user()->id;
             $data['confirmed_at'] = now();
         }
 
-        // Clear confirmation if moved back from paid
         if (in_array($request->status, ['pending', 'delivering', 'cancelled'])) {
             $data['confirmed_by'] = null;
             $data['confirmed_at'] = null;
@@ -174,7 +196,34 @@ class SaleController extends ApiController
         $sale->update($data);
         $sale->load('items.product', 'user', 'confirmedBy');
 
-        return $this->success(new SaleResource($sale), 'Order status updated.');
+        try {
+            app(TelegramService::class)->notifyStatusUpdate($sale, $request->user()->name);
+        } catch (\Exception $e) {
+            \Log::warning('Telegram status notification failed: ' . $e->getMessage());
+        }
+
+        return $this->success(new SaleResource($sale), 'Payment status updated.');
+    }
+
+    // POST|PATCH /api/sales/{id}/delivery — update DELIVERY status
+    public function updateDelivery(Request $request, Sale $sale)
+    {
+        $this->requirePermission($request, 'sales.view');
+
+        $request->validate([
+            'delivery_status' => 'required|in:pending,delivering,delivered',
+        ]);
+
+        $sale->update(['delivery_status' => $request->delivery_status]);
+        $sale->load('items.product', 'user', 'confirmedBy');
+
+        try {
+            app(TelegramService::class)->notifyDeliveryUpdate($sale, $request->user()->name);
+        } catch (\Exception $e) {
+            \Log::warning('Telegram delivery notification failed: ' . $e->getMessage());
+        }
+
+        return $this->success(new SaleResource($sale), 'Delivery status updated.');
     }
 
     // DELETE /api/sales/{id}

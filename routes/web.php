@@ -116,6 +116,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ->middleware('permission:pos.view');
 
     // ── SALES ────────────────────────────────────────────────────
+    Route::patch('sales/{sale}/delivery', [SaleController::class, 'updateDelivery'])
+    ->name('sales.updateDelivery');
+
+    Route::patch('sales/{sale}/status', [SaleController::class, 'updateStatus'])
+    ->name('sales.updateStatus');
     Route::resource('sales', SaleController::class)
         ->only(['index', 'show', 'destroy'])
         ->middleware('permission:sales.view');
